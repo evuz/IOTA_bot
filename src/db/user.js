@@ -9,6 +9,14 @@ function initCollection(newDB) {
   }
 }
 
+function newUser(id) {
+  const user = users.findOne({ id });
+  if (user === null) {
+    users.insert({ id });
+  }
+}
+
 module.exports = {
-  initCollection
+  initCollection,
+  newUser
 }
