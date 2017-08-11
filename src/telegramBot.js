@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const api = require('./api');
+const convert = require('./convert');
 
 function MyTelegramBot(config) {
     const token = config.token;
@@ -15,9 +16,11 @@ function MyTelegramBot(config) {
         const chatId = msg.chat.id;
 
         api.getIOTAPrice()
-            .then(res => {
-                const date = new Date(res.timestamp * 1000).toLocaleTimeString('es-ES');
-                bot.sendMessage(chatId, `IOTA price at ${date}: ${res.price}`)
+            .then(async ({ timestamp, price }) => {
+                const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+                bot.sendMessage(chatId,
+                    `IOTA price at ${date}:\n${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
+                )
             });
     });
 
