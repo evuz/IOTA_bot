@@ -26,7 +26,10 @@ function MyTelegramBot(config) {
     );
   });
 
-      api.getIOTAPrice()
+  bot.onText(/\/infoIOTA/, (msg) => {
+    const chatId = msg.chat.id;
+
+    api.getIOTAPrice()
       .then(async ({ timestamp, price }) => {
         const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
         bot.sendMessage(chatId,
@@ -36,7 +39,7 @@ function MyTelegramBot(config) {
       });
   });
 
-  bot.onText(/\/info/, (msg) => {
+  bot.onText(/\/infoUser/, (msg) => {
     const chatId = msg.chat.id;
 
     api.getIOTAPrice()
@@ -46,18 +49,20 @@ function MyTelegramBot(config) {
       });
   });
 
-  bot.onText(/\/IOTAS (.+)/, (msg, match) => {
+  bot.onText(/\/setIOTA (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
-    const resp = match[1]; // the captured "whatever"
-
-    bot.sendMessage(chatId, resp);
+    const iotas = match[1];
+    ModelUser.setIOTA(chatId, iotas);
+    bot.sendMessage(chatId, 'Save!');
   });
 
-  bot.onText(/\/deposit (.+)/, (msg, match) => {
+  bot.onText(/\/setEUR (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
-    const resp = match[1]; // the captured "whatever"
+    const eur = match[1]; // the captured "whatever"
 
-    bot.sendMessage(chatId, resp);
+    ModelUser.setEUR(chatId, eur);
+
+    bot.sendMessage(chatId, 'Save!');
   });
 }
 
