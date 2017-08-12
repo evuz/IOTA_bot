@@ -26,27 +26,27 @@ function MyTelegramBot(config) {
     );
   });
 
-  bot.onText(/\/infoIOTA/, (msg) => {
+  bot.onText(/\/infoIOTA/, async (msg) => {
     const chatId = msg.chat.id;
 
-    api.getIOTAPrice()
-      .then(async ({ timestamp, price }) => {
-        const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
-        bot.sendMessage(chatId,
-          `IOTA price at ${date}:\n` +
-          `${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
-        )
-      });
+    const { timestamp, price } = await api.getIOTAPrice();
+    const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+
+    bot.sendMessage(chatId,
+      `IOTA price at ${date}:\n` +
+      `${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
+    )
   });
 
-  bot.onText(/\/infoUser/, (msg) => {
+  bot.onText(/\/infoUser/, async (msg) => {
     const chatId = msg.chat.id;
 
-    api.getIOTAPrice()
-      .then(res => {
-        const date = new Date(res.timestamp * 1000).toLocaleTimeString('es-ES');
-        bot.sendMessage(chatId, `IOTA price at ${date}: ${res.price}`)
-      });
+    const { timestamp, price } = await api.getIOTAPrice();
+    const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+    bot.sendMessage(chatId,
+      `IOTA price at ${date}:\n` +
+      `${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
+    )
   });
 
   bot.onText(/\/setIOTA (.+)/, (msg, match) => {
