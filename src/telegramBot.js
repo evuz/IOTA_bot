@@ -15,10 +15,18 @@ function MyTelegramBot(config) {
       'Use /help to show the commands list');
   });
 
-  bot.onText(/\/IOTAinfo/, (msg) => {
+  bot.onText(/\/help/, (msg, match) => {
     const chatId = msg.chat.id;
 
-    api.getIOTAPrice()
+    bot.sendMessage(chatId,
+      '/infoIOTA - Show IOTA price \n' +
+      '/infoUser - Show IOTA value of user \n' +
+      '/setIOTAS - Set your IOTAs number' +
+      '/setEUR - Set your investment'
+    );
+  });
+
+      api.getIOTAPrice()
       .then(async ({ timestamp, price }) => {
         const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
         bot.sendMessage(chatId,
