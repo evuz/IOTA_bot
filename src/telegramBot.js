@@ -67,7 +67,8 @@ function MyTelegramBot(config) {
     const userId = msg.from.id;
 
     const iotas = match[1];
-    ModelUser.setIOTA(userId, iotas);
+    const user = ModelUser.setIOTA(userId, iotas);
+    if (user.error) return bot.sendMessage(chatId, user.error);
     bot.sendMessage(chatId, 'Save!');
   });
 
@@ -77,7 +78,8 @@ function MyTelegramBot(config) {
 
     const value = match[1];
 
-    ModelUser.setInvestment(userId, value);
+    const user = ModelUser.setInvestment(userId, value);
+    if (user.error) return bot.sendMessage(chatId, user.error);
     bot.sendMessage(chatId, 'Save!');
   });
 
