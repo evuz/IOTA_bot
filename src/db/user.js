@@ -13,13 +13,26 @@ function findUserById(id) {
   return users.findOne({ id });
 }
 
-
 function newUser(id) {
   const user = findUserById(id);
   if (user === null) {
     return users.insert({ id });
   }
   return user;
+}
+
+function getIOTAValue(id, priceIOTA) {
+  const user = findUserById(id);
+  if (user !== null) {
+    if (!user.iotas || !user.investment)
+      return { error: 'User doesn\'t set his data' };
+
+    return {
+      profit: user.iotas * priceIOTA,
+      iotas: user.iotas,
+      currency: user.currency || 'USD'
+    }
+  }
 }
 
 function setIOTA(id, iotas) {
@@ -29,16 +42,29 @@ function setIOTA(id, iotas) {
   users.update(user);
 }
 
-function setEUR(id, eur) {
+function setInvestment(id, investment) {
   let user = findUserById(id);
   if (user === null) user = newUser(id);
-  user = Object.assign({}, user, { eur });
+  user = Object.assign({}, user, { investment });
   users.update(user);
+}
+
+function setCurrency(id, currency) {
+  if (currency !== 'USD' && currency !== 'EUR')
+    return { error: 'Currency not supported yet, you can use USD or EUR' }
+
+  let user = findUserById(id);
+  if (user === null) user = newUser(id);
+  user = Object.assign({}, user, { currency });
+  users.update(user);
+  return { status: 'success' }
 }
 
 module.exports = {
   initCollection,
   newUser,
   setIOTA,
-  setEUR
+  setInvestment,
+  setCurrency,
+  getIOTAValue
 }
