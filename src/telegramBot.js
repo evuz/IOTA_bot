@@ -9,7 +9,9 @@ function MyTelegramBot(config) {
 
   bot.onText(/\/start/, (msg, match) => {
     const chatId = msg.chat.id;
-    ModelUser.newUser(chatId);
+    const userId = msg.from.id;
+
+    ModelUser.newUser(userId);
     bot.sendMessage(chatId,
       'Welcome!\n' +
       'Use /help to show the commands list');
@@ -21,7 +23,7 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId,
       '/infoIOTA - Show IOTA price \n' +
       '/infoUser - Show IOTA value of user \n' +
-      '/setIOTAS - Set your IOTAs number' +
+      '/setIOTA - Set your IOTAs number \n' +
       '/setEUR - Set your investment'
     );
   });
@@ -40,28 +42,36 @@ function MyTelegramBot(config) {
 
   bot.onText(/\/infoUser/, async (msg) => {
     const chatId = msg.chat.id;
+    const userId = msg.from.id;
+
 
     const { timestamp, price } = await api.getIOTAPrice();
-    const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+    const user = ModelUser.getIOTAValue(userId, price);
+
+    if (user.error)
+      return bot.sendMessage(chatId, user.error);
+
     bot.sendMessage(chatId,
-      `IOTA price at ${date}:\n` +
-      `${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
+      `Your ${user.iotas} MI is worth ${(await convert.USDtoEUR(user.eur)).toFixed(2)}€`
     )
   });
 
   bot.onText(/\/setIOTA (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
+    const userId = msg.from.id;
+
     const iotas = match[1];
-    ModelUser.setIOTA(chatId, iotas);
+    ModelUser.setIOTA(userId, iotas);
     bot.sendMessage(chatId, 'Save!');
   });
 
   bot.onText(/\/setEUR (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
+    const userId = msg.from.id;
+
     const eur = match[1]; // the captured "whatever"
 
-    ModelUser.setEUR(chatId, eur);
-
+    ModelUser.setEUR(userId, eur);
     bot.sendMessage(chatId, 'Save!');
   });
 }
