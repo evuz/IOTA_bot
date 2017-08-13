@@ -13,10 +13,10 @@ function findUserById(id) {
   return users.findOne({ id });
 }
 
-function newUser(id) {
+function newUser({id, first_name}) {
   const user = findUserById(id);
   if (user === null) {
-    return users.insert({ id });
+    return users.insert({ id, name: first_name });
   }
   return user;
 }
@@ -26,13 +26,14 @@ function getIOTAValue(id, priceIOTA) {
   if (user !== null) {
     if (!user.iotas || !user.investment)
       return { error: 'User doesn\'t set his data' };
-
     return {
+      name: user.name,
       profit: user.iotas * priceIOTA,
       iotas: user.iotas,
       currency: user.currency || 'USD'
     }
   }
+  return { error: 'User not found'};
 }
 
 function setIOTA(id, iotas) {

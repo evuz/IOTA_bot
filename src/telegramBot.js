@@ -9,9 +9,9 @@ function MyTelegramBot(config) {
 
   bot.onText(/\/start/, (msg, match) => {
     const chatId = msg.chat.id;
-    const userId = msg.from.id;
+    const user = msg.from;
 
-    ModelUser.newUser(userId);
+    ModelUser.newUser(user);
     bot.sendMessage(chatId,
       'Welcome!\n' +
       'Use /help to show the commands list');
@@ -57,7 +57,8 @@ function MyTelegramBot(config) {
       (await convert.USDtoEUR(user.profit)).toFixed(2)
 
     bot.sendMessage(chatId,
-      `Your ${user.iotas} MI is worth ${profitFormat}${user.currency}`
+      `${user.name || userId}: ${user.iotas} MI is worth ` +
+      `${profitFormat} ${user.currency}`
     )
   });
 
