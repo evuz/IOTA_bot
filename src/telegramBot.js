@@ -24,7 +24,8 @@ function MyTelegramBot(config) {
       '/infoIOTA - Show IOTA price \n' +
       '/infoUser - Show IOTA value of user \n' +
       '/setIOTA - Set your IOTAs number \n' +
-      '/setEUR - Set your investment'
+      '/setInvestment - Set your investment \n' +
+      '/setCurrency - Set your currency'
     );
   });
 
@@ -51,8 +52,17 @@ function MyTelegramBot(config) {
     if (user.error)
       return bot.sendMessage(chatId, user.error);
 
+<<<<<<< HEAD
     bot.sendMessage(chatId,
       `Your ${user.iotas} MI is worth ${(await convert.USDtoEUR(user.eur)).toFixed(2)}€`
+=======
+    const profitFormat = user.currency === 'USD' ?
+      user.profit.toFixed(2) :
+      (await convert.USDtoEUR(user.profit)).toFixed(2)
+
+    bot.sendMessage(chatId,
+      `Your ${user.iotas} MI is worth ${profitFormat}${user.currency}`
+>>>>>>> feature/set_currency
     )
   });
 
@@ -62,16 +72,36 @@ function MyTelegramBot(config) {
 
     const iotas = match[1];
     ModelUser.setIOTA(userId, iotas);
+<<<<<<< HEAD
+=======
     bot.sendMessage(chatId, 'Save!');
   });
 
-  bot.onText(/\/setEUR (.+)/, (msg, match) => {
+  bot.onText(/\/setInvestment (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
 
+    const value = match[1];
+
+    ModelUser.setInvestment(userId, value);
+>>>>>>> feature/set_currency
+    bot.sendMessage(chatId, 'Save!');
+  });
+
+  bot.onText(/\/setCurrency (.+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const userId = msg.from.id;
+
+<<<<<<< HEAD
     const eur = match[1]; // the captured "whatever"
 
     ModelUser.setEUR(userId, eur);
+=======
+    const value = match[1];
+
+    const user = ModelUser.setCurrency(userId, value);
+    if (user.error) return bot.sendMessage(chatId, user.error);
+>>>>>>> feature/set_currency
     bot.sendMessage(chatId, 'Save!');
   });
 }
