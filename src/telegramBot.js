@@ -2,10 +2,15 @@ const TelegramBot = require('node-telegram-bot-api');
 const api = require('./api');
 const convert = require('./convert');
 const ModelUser = require('./db/user');
+const ModelChat = require('./db/chat');
 
 function MyTelegramBot(config) {
   const token = config.token;
   const bot = new TelegramBot(token, { polling: true });
+  let myID;
+
+  bot.getMe()
+    .then(res => myID = res.id);
 
   bot.onText(/\/start/, (msg, match) => {
     const chatId = msg.chat.id;
@@ -45,7 +50,6 @@ function MyTelegramBot(config) {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
 
-
     const { timestamp, price } = await api.getIOTAPrice();
     const user = ModelUser.getIOTAValue(userId, price);
 
@@ -68,6 +72,7 @@ function MyTelegramBot(config) {
 
     const iotas = match[1];
     const user = ModelUser.setIOTA(userId, iotas);
+
     if (user.error) return bot.sendMessage(chatId, user.error);
     bot.sendMessage(chatId, 'Save!');
   });
@@ -93,6 +98,56 @@ function MyTelegramBot(config) {
     if (user.error) return bot.sendMessage(chatId, user.error);
     bot.sendMessage(chatId, 'Save!');
   });
+
+  bot.onText(/\/helloBot/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const user = msg.from;
+    const chatType = msg.chat.type;
+    if (!isGroup(chatType)) return;
+    const res = ModelChat.addMemberToChat(chatId, user.id);
+
+    if (res.error) return bot.sendMessage(chatId, res.error);
+    bot.sendMessage(chatId, `Hello ${user.first_name || user.id}! \n` +
+      `I know ` +
+      `${ModelChat.getMemberCount(chatId).members}/${(await bot.getChatMembersCount(chatId)) - 1} members`
+    );
+  });
+
+  bot.on('message', (msg, match) => {
+    const chat = msg.chat;
+    const { left_chat_member, new_chat_member } = msg;
+    if (left_chat_member) leftChatMember(chat, left_chat_member);
+    if (new_chat_member) newChatMember(chat, new_chat_member);
+  })
+
+  function newChatMember(chat, member) {
+    if (!isGroup(chat.type)) return;
+
+    const chatId = chat.id;
+    if (member.id === myID) {
+      ModelChat.newChat(chatId);
+      return bot.sendMessage(chatId, 'Hi! I don\'t know you.' +
+        'Please introduce yourself using the command /helloBot'
+      );
+    }
+    const res = ModelChat.addMemberToChat(chatId, member.id);
+    if (res.error) return bot.sendMessage(chatId, res.error);
+    bot.sendMessage(chatId, `Hello ${member.first_name || memberrs.id}!`);
+  }
+
+  function leftChatMember(chat, member) {
+    if (!isGroup(chat.type)) return;
+
+    const chatId = chat.id;
+    ModelChat.leftMemberToChat(chatId, member.id)
+  }
+
+  function isGroup(type) {
+    if (type === 'group' || type === 'supergroup')
+      return true;
+
+    return false;
+  }
 }
 
 module.exports = MyTelegramBot;
