@@ -12,6 +12,12 @@ async function USDtoEUR(value) {
   return value / rates.USD;
 }
 
+function convertTo(value, rate) {
+  return (value * rate).toFixed(2);
+}
+
 module.exports = {
-  USDtoEUR
+  USDtoEUR,
+  getRates,
+  convertTo
 }

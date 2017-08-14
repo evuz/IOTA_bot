@@ -52,10 +52,20 @@ function getMemberCount(chatId) {
   return { error: 'Chat not found' };
 }
 
+function getMembers(chatId) {
+  const chat = findChatById(chatId);
+  if (chat === null) return { error: 'Chat not found' };
+  const { members } = chat;
+  const membersFiltered = Object.keys(members)
+    .filter(key => members[key] === true);
+  return { members: membersFiltered };
+}
+
 module.exports = {
   initCollection,
   newChat,
   addMemberToChat,
   leftMemberToChat,
-  getMemberCount
+  getMemberCount,
+  getMembers
 }
