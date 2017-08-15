@@ -31,6 +31,24 @@ function addMemberToChat(chatId, userId) {
   return { error: 'Chat not found' };
 }
 
+function addMessageId(chatId, messageId) {
+  const chat = findChatById(chatId);
+  if (chat !== null) {
+    const newChat = Object.assign({}, chat, { messageId });
+    chats.update(newChat);
+    return { status: 'success' };
+  }
+  return { error: 'Chat not found' };
+}
+
+function getMessageId(chatId) {
+  const chat = findChatById(chatId);
+  if (chat !== null) {
+    return { messageId: chat.messageId };
+  }
+  return { error: 'Chat not found' };
+}
+
 function leftMemberToChat(chatId, userId) {
   const chat = findChatById(chatId);
   if (chat !== null) {
@@ -65,6 +83,8 @@ module.exports = {
   initCollection,
   newChat,
   addMemberToChat,
+  addMessageId,
+  getMessageId,
   leftMemberToChat,
   getMemberCount,
   getMembers

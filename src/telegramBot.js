@@ -25,13 +25,19 @@ function MyTelegramBot(config) {
   bot.onText(/\/help/, (msg, match) => {
     const chatId = msg.chat.id;
 
-    bot.sendMessage(chatId,
+    let message =
       '/infoIOTA - Show IOTA price \n' +
       '/infoUser - Show IOTA value of user \n' +
       '/setIOTA - Set your IOTAs number \n' +
       '/setInvestment - Set your investment \n' +
       '/setCurrency - Set your currency'
-    );
+
+    if (isGroup(msg.chat.type))
+      message +=
+        '\n/helloBot - Say hi to me!' +
+        '\n/infoUpdate (min)- Send a info message it will be update automatically';
+
+    bot.sendMessage(chatId, message);
   });
 
   bot.onText(/\/infoIOTA/, async (msg) => {
@@ -58,23 +64,39 @@ function MyTelegramBot(config) {
       members = [msg.from.id];
     }
 
-    const { timestamp, price } = await api.getIOTAPrice();
-    const { USD } = await convert.getRates();
+    const message = await getMessageInfoUsers(members);
+    bot.sendMessage(chatId, message);
+  });
 
-    const message = members.map((member) => {
-      const user = ModelUser.getIOTAValue(parseInt(member), price);
-      if (user.error)
-        return null;
+  bot.onText(/\/infoUpdate (.+)/, async (msg, match) => {
+    if (!isGroup(msg.chat.type)) return;
 
-      const profitFormat = user.currency === 'USD' ?
-        user.profit.toFixed(2) :
-        convert.convertTo(user.profit, 1 / USD);
-      const actualProfit = profitFormat - user.inv;
-      return `${user.name || userId}: ${user.iotas} MI is worth ` +
-        `${profitFormat} ${user.currency} ` +
-        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)})`;
-    });
-    bot.sendMessage(chatId, message.join('\n'));
+    const chatId = msg.chat.id;
+    const min = match[1];
+
+    const { members, error } = ModelChat.getMembers(chatId);
+    if (error) return bot.sendMessage(chatId, res.error);
+
+    let message = (await getMessageInfoUsers(members)) +
+      `\n\nThat message will be updated every ${min} minutes`;
+    bot.sendMessage(chatId, message)
+      .then(({ message_id }) => {
+        ModelChat.addMessageId(chatId, message_id);
+      });
+
+    setInterval(async () => {
+      const { members } = ModelChat.getMembers(chatId);
+      const date = new Date().toLocaleTimeString('es-ES');
+      let message = (await getMessageInfoUsers(members)) +
+        `\n\nThat message will be updated every ${min} minutes ` +
+        `\nLast update: ${date}`;
+      bot.editMessageText(message,
+        {
+          message_id: ModelChat.getMessageId(chatId).messageId,
+          chat_id: chatId
+        });
+    }, min * 60 * 1000);
+    // TODO: clear Interval
   });
 
   bot.onText(/\/setIOTA (.+)/, (msg, match) => {
@@ -151,6 +173,25 @@ function MyTelegramBot(config) {
 
     const chatId = chat.id;
     ModelChat.leftMemberToChat(chatId, member.id)
+  }
+
+  async function getMessageInfoUsers(members) {
+    const { timestamp, price } = await api.getIOTAPrice();
+    const { USD } = await convert.getRates();
+
+    return members.map((member) => {
+      const user = ModelUser.getIOTAValue(parseInt(member), price);
+      if (user.error)
+        return null;
+
+      const profitFormat = user.currency === 'USD' ?
+        user.profit.toFixed(2) :
+        convert.convertTo(user.profit, 1 / USD);
+      const actualProfit = profitFormat - user.inv;
+      return `${user.name || userId}: ${user.iotas} MI is worth ` +
+        `${profitFormat} ${user.currency} ` +
+        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)})`;
+    }).join('\n');
   }
 
   function isGroup(type) {
