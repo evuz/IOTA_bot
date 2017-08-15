@@ -73,6 +73,7 @@ function MyTelegramBot(config) {
 
     const chatId = msg.chat.id;
     const min = match[1];
+    let messageId;
 
     const { members, error } = ModelChat.getMembers(chatId);
     if (error) return bot.sendMessage(chatId, res.error);
@@ -81,22 +82,27 @@ function MyTelegramBot(config) {
       `\n\nThat message will be updated every ${min} minutes`;
     bot.sendMessage(chatId, message)
       .then(({ message_id }) => {
-        ModelChat.addMessageId(chatId, message_id);
+        messageId = message_id;
+        ModelChat.addMessageId(chatId, messageId);
       });
 
-    setInterval(async () => {
-      const { members } = ModelChat.getMembers(chatId);
-      const date = new Date().toLocaleTimeString('es-ES');
-      let message = (await getMessageInfoUsers(members)) +
-        `\n\nThat message will be updated every ${min} minutes ` +
-        `\nLast update: ${date}`;
-      bot.editMessageText(message,
-        {
-          message_id: ModelChat.getMessageId(chatId).messageId,
-          chat_id: chatId
-        });
+    const intervalId = setInterval(async () => {
+      const chatMessageId = ModelChat.getMessageId(chatId).messageId;
+      if (chatMessageId == messageId) {
+        const { members } = ModelChat.getMembers(chatId);
+        const date = new Date().toLocaleTimeString('es-ES');
+        let message = (await getMessageInfoUsers(members)) +
+          `\n\nThat message will be updated every ${min} minutes ` +
+          `\nLast update: ${date}`;
+        bot.editMessageText(message,
+          {
+            message_id: ModelChat.getMessageId(chatId).messageId,
+            chat_id: chatId
+          });
+      } else {
+        clearInterval(intervalId);
+      }
     }, min * 60 * 1000);
-    // TODO: clear Interval
   });
 
   bot.onText(/\/setIOTA (.+)/, (msg, match) => {
