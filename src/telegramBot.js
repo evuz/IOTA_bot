@@ -143,6 +143,7 @@ function MyTelegramBot(config) {
     const user = msg.from;
     const chatType = msg.chat.type;
     if (!isGroup(chatType)) return;
+    ModelUser.newUser(user);
     const res = ModelChat.addMemberToChat(chatId, user.id);
 
     if (res.error) return bot.sendMessage(chatId, res.error);
@@ -169,6 +170,7 @@ function MyTelegramBot(config) {
         'Please introduce yourself using the command /helloBot'
       );
     }
+    ModelUser.newUser(user);
     const res = ModelChat.addMemberToChat(chatId, member.id);
     if (res.error) return bot.sendMessage(chatId, res.error);
     bot.sendMessage(chatId, `Hello ${member.first_name || members.id}!`);
