@@ -31,7 +31,8 @@ function MyTelegramBot(config) {
       '/infoUser - Show IOTA value of user \n' +
       '/setIOTA - Set your IOTAs number \n' +
       '/setInvestment - Set your investment \n' +
-      '/setCurrency - Set your currency'
+      '/setCurrency - Set your currency \n' +
+      '/setAlias - Set your name'
 
     if (isGroup(msg.chat.type))
       message +=
@@ -189,6 +190,23 @@ function MyTelegramBot(config) {
       }
     };
     bot.sendMessage(chatId, 'Select your currency', opts);
+  });
+
+  bot.onText(/\/setAlias (.+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const value = match[1];
+    const userId = msg.from.id;
+
+    ModelUser.setName(userId, value);
+    bot.sendMessage(chatId, 'Save!');
+  });
+
+  bot.onText(/\/setAlias$/, (msg) => {
+    const chatId = msg.chat.id;
+
+    bot.sendMessage(chatId, 'Introduce a value, for example: \n' +
+      '/setAlias IotaBot'
+    );
   });
 
   bot.onText(/\/helloBot/, async (msg) => {
