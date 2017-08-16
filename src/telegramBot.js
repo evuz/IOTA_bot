@@ -56,6 +56,7 @@ function MyTelegramBot(config) {
 
   bot.onText(/\/infoUser/, async (msg) => {
     const chatId = msg.chat.id;
+    const chatType = msg.chat.type;
 
     let members;
     if (isGroup(msg.chat.type)) {
@@ -66,7 +67,10 @@ function MyTelegramBot(config) {
       members = [msg.from.id];
     }
 
-    const message = await getMessageInfoUsers(members);
+    let type;
+    if (isGroup(chatType)) type = ModelChat.getCurrency(chatId);
+
+    const message = await getMessageInfoUsers(members, type);
     bot.sendMessage(chatId, message);
   });
 
@@ -74,6 +78,7 @@ function MyTelegramBot(config) {
     if (!isGroup(msg.chat.type)) return;
 
     const chatId = msg.chat.id;
+    const chatType = msg.chat.type;
     const value = match[1];
     let messageId;
 
@@ -89,7 +94,10 @@ function MyTelegramBot(config) {
     const { members, error } = ModelChat.getMembers(chatId);
     if (error) return bot.sendMessage(chatId, error);
 
-    let message = (await getMessageInfoUsers(members)) +
+    let type;
+    if (isGroup(chatType)) type = ModelChat.getCurrency(chatId);
+
+    let message = (await getMessageInfoUsers(members, type)) +
       `\n\nThis message will be updated every ${min} minutes`;
     bot.sendMessage(chatId, message)
       .then(({ message_id }) => {
@@ -102,7 +110,7 @@ function MyTelegramBot(config) {
       if (chatMessageId == messageId) {
         const { members } = ModelChat.getMembers(chatId);
         const date = new Date().toLocaleTimeString('es-ES');
-        let message = (await getMessageInfoUsers(members)) +
+        let message = (await getMessageInfoUsers(members, type)) +
           `\n\nThat message will be updated every ${min} minutes ` +
           `\nLast update: ${date}`;
         bot.editMessageText(message,
@@ -161,14 +169,16 @@ function MyTelegramBot(config) {
   });
 
   bot.onText(/\/setCurrency (.+)/, (msg, match) => {
-    const chatId = msg.chat.id;
+    const chat = msg.chat;
     const userId = msg.from.id;
 
     const value = match[1];
 
-    const user = ModelUser.setCurrency(userId, value);
-    if (user.error) return bot.sendMessage(chatId, user.error);
-    bot.sendMessage(chatId, 'Save!');
+    let user;
+    if (isGroup(chat.type)) user = ModelChat.setCurrency(chat.id, value);
+    else user = ModelUser.setCurrency(userId, value);
+    if (user.error) return bot.sendMessage(chat.id, user.error);
+    bot.sendMessage(chat.id, 'Save!');
   });
 
   bot.onText(/\/setCurrency$/, (msg) => {
@@ -232,19 +242,21 @@ function MyTelegramBot(config) {
   })
 
   bot.on('callback_query', (callbackQuery) => {
-    const chatId = callbackQuery.message.chat.id;
+    const chat = callbackQuery.message.chat;
     const userId = callbackQuery.from.id;
     const data = callbackQuery.data.split(' ');
     const [command, value] = data;
 
     const opts = {
-      chat_id: chatId,
+      chat_id: chat.id,
       message_id: callbackQuery.message.message_id
     };
 
     switch (command) {
       case 'setCurrency': {
-        const user = ModelUser.setCurrency(userId, value);
+        let user;
+        if (isGroup(chat.type)) user = ModelChat.setCurrency(chat.id, value);
+        else user = ModelUser.setCurrency(userId, value);
         if (user.error) return bot.editMessageText(user.error, opts);
         bot.editMessageText(`${value} selected`, opts);
         break;
@@ -277,7 +289,7 @@ function MyTelegramBot(config) {
     ModelChat.leftMemberToChat(chatId, member.id)
   }
 
-  async function getMessageInfoUsers(members) {
+  async function getMessageInfoUsers(members, type) {
     const { timestamp, price } = await api.getIOTAPrice();
     const { USD } = await convert.getRates();
     const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
@@ -286,13 +298,15 @@ function MyTelegramBot(config) {
       if (user.error)
         return null;
 
-      const profitFormat = user.currency === 'USD' ?
+      const currency = type || user.currency;
+
+      const profitFormat = currency === 'USD' ?
         user.profit.toFixed(2) :
         convert.convertTo(user.profit, 1 / USD);
       const actualProfit = profitFormat - user.inv;
       return `${user.name || user.id}: ${user.iotas} MI is worth ` +
-        `${profitFormat}${convert.getSymbol(user.currency)} ` +
-        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})`;
+        `${profitFormat}${convert.getSymbol(currency)} ` +
+        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)}${convert.getSymbol(currency)})`;
     }).join('\n');
 
     const msg =

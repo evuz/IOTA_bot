@@ -21,6 +21,23 @@ function newChat(id) {
   return chat;
 }
 
+function setCurrency(chatId, currency) {
+  const chat = findChatById(chatId);
+  if (chat !== null) {
+    const newChat = Object.assign({}, chat, { currency });
+    chats.update(newChat);
+    return { status: 'success' };
+  }
+  return { error: 'Chat not found' };
+}
+
+function getCurrency(chatId) {
+  const chat = findChatById(chatId);
+  if (chat !== null) {
+    return chat.currency || 'USD';
+  }
+}
+
 function addMemberToChat(chatId, userId) {
   const chat = findChatById(chatId);
   if (chat !== null) {
@@ -82,6 +99,8 @@ function getMembers(chatId) {
 module.exports = {
   initCollection,
   newChat,
+  setCurrency,
+  getCurrency,
   addMemberToChat,
   addMessageId,
   getMessageId,
