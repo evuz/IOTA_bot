@@ -1,0 +1,21 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "sourceType": "module"
+  },
+  "extends": "eslint:recommended",
+  "rules": {
+    "no-console": "warn",
+    "no-debugger": "warn",
+    "no-var": "error",
+    "no-trailing-spaces": "error",
+    "comma-dangle": [
+      "error",
+      "never"
+    ]
+  }
+}

@@ -13,7 +13,7 @@ function MyTelegramBot(config) {
   bot.getMe()
     .then(res => myID = res.id);
 
-  bot.onText(/\/start/, (msg, match) => {
+  bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     const user = msg.from;
 
@@ -23,7 +23,7 @@ function MyTelegramBot(config) {
       'Use /help to show the commands list');
   });
 
-  bot.onText(/\/help/, (msg, match) => {
+  bot.onText(/\/help/, (msg) => {
     const chatId = msg.chat.id;
 
     let message =
@@ -86,7 +86,7 @@ function MyTelegramBot(config) {
     );
 
     const { members, error } = ModelChat.getMembers(chatId);
-    if (error) return bot.sendMessage(chatId, res.error);
+    if (error) return bot.sendMessage(chatId, error);
 
     let message = (await getMessageInfoUsers(members)) +
       `\n\nThis message will be updated every ${min} minutes`;
@@ -129,7 +129,7 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Save!');
   });
 
-  bot.onText(/\/setIOTA/, (msg, match) => {
+  bot.onText(/\/setIOTA/, (msg) => {
     const chatId = msg.chat.id;
 
     bot.sendMessage(chatId, 'Introduce a value, for example: \n' +
@@ -151,7 +151,7 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Save!');
   });
 
-  bot.onText(/\/setInvestment/, (msg, match) => {
+  bot.onText(/\/setInvestment/, (msg) => {
     const chatId = msg.chat.id;
 
     bot.sendMessage(chatId, 'Introduce a value, for example: \n' +
@@ -170,7 +170,7 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Save!');
   });
 
-  bot.onText(/\/setCurrency/, (msg, match) => {
+  bot.onText(/\/setCurrency/, (msg) => {
     const chatId = msg.chat.id;
 
     const opts = {
@@ -191,7 +191,7 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Select your currency', opts);
   });
 
-  bot.onText(/\/helloBot/, async (msg, match) => {
+  bot.onText(/\/helloBot/, async (msg) => {
     const chatId = msg.chat.id;
     const user = msg.from;
     const chatType = msg.chat.type;
@@ -206,7 +206,7 @@ function MyTelegramBot(config) {
     );
   });
 
-  bot.on('message', (msg, match) => {
+  bot.on('message', (msg) => {
     const chat = msg.chat;
     const { left_chat_member, new_chat_member } = msg;
     if (left_chat_member) leftChatMember(chat, left_chat_member);
@@ -225,11 +225,12 @@ function MyTelegramBot(config) {
     };
 
     switch (command) {
-      case 'setCurrency':
+      case 'setCurrency': {
         const user = ModelUser.setCurrency(userId, value);
         if (user.error) return bot.editMessageText(user.error, opts);
         bot.editMessageText(`${value} selected`, opts);
         break;
+      }
       default:
         break;
     }
@@ -245,10 +246,10 @@ function MyTelegramBot(config) {
         'Please introduce yourself using the command /helloBot'
       );
     }
-    ModelUser.newUser(user);
+    ModelUser.newUser(member);
     const res = ModelChat.addMemberToChat(chatId, member.id);
     if (res.error) return bot.sendMessage(chatId, res.error);
-    bot.sendMessage(chatId, `Hello ${member.first_name || members.id}!`);
+    bot.sendMessage(chatId, `Hello ${member.first_name || member.id}!`);
   }
 
   function leftChatMember(chat, member) {
@@ -271,7 +272,7 @@ function MyTelegramBot(config) {
         user.profit.toFixed(2) :
         convert.convertTo(user.profit, 1 / USD);
       const actualProfit = profitFormat - user.inv;
-      return `${user.name || userId}: ${user.iotas} MI is worth ` +
+      return `${user.name || user.id}: ${user.iotas} MI is worth ` +
         `${profitFormat} ${user.currency} ` +
         `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)})`;
     }).join('\n');

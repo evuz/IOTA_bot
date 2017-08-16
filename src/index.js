@@ -4,7 +4,7 @@ const ModelDB = require('./db');
 const ModelUser = require('./db/user');
 const ModelChat = require('./db/chat');
 
-const db = ModelDB.createDB('IOTA.db')
+ModelDB.createDB('IOTA.db')
   .then(db => {
     ModelChat.initCollection(db);
     ModelUser.initCollection(db);
