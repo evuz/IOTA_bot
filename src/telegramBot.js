@@ -71,7 +71,7 @@ function MyTelegramBot(config) {
     if (isGroup(chatType)) type = ModelChat.getCurrency(chatId);
 
     const message = await getMessageInfoUsers(members, type);
-    bot.sendMessage(chatId, message);
+    bot.sendMessage(chatId, message, {parse_mode: 'markdown'});
   });
 
   bot.onText(/\/infoUpdate (.+)/, async (msg, match) => {
@@ -304,9 +304,9 @@ function MyTelegramBot(config) {
         user.profit.toFixed(2) :
         convert.convertTo(user.profit, 1 / USD);
       const actualProfit = profitFormat - user.inv;
-      return `${user.name || user.id}: ${user.iotas} MI is worth ` +
+      return `\`\`\` ${user.name || user.id}: ${user.iotas}MI ~ ` +
         `${profitFormat}${convert.getSymbol(currency)} ` +
-        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)}${convert.getSymbol(currency)})`;
+        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)}${convert.getSymbol(currency)})\`\`\``;
     }).join('\n');
 
     const msg =
