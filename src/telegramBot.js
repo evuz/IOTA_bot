@@ -261,8 +261,8 @@ function MyTelegramBot(config) {
   async function getMessageInfoUsers(members) {
     const { timestamp, price } = await api.getIOTAPrice();
     const { USD } = await convert.getRates();
-
-    return members.map((member) => {
+    const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+    const memberText = members.map((member) => {
       const user = ModelUser.getIOTAValue(parseInt(member), price);
       if (user.error)
         return null;
@@ -275,6 +275,13 @@ function MyTelegramBot(config) {
         `${profitFormat} ${user.currency} ` +
         `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)})`;
     }).join('\n');
+
+    const msg =
+      `IOTA price at ${date}:\n` +
+      `${price}$ = ${(convert.convertTo(price, 1 / USD))}€\n\n` +
+      memberText;
+
+    return msg;
   }
 
   function isGroup(type) {
