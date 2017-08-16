@@ -13,7 +13,7 @@ function findUserById(id) {
   return users.findOne({ id });
 }
 
-function newUser({id, first_name}) {
+function newUser({ id, first_name }) {
   const user = findUserById(id);
   if (user === null) {
     return users.insert({ id, name: first_name });
@@ -34,12 +34,12 @@ function getIOTAValue(id, priceIOTA) {
       currency: user.currency || 'USD'
     }
   }
-  return { error: 'User not found'};
+  return { error: 'User not found' };
 }
 
 function setIOTA(id, iotas) {
   let user = findUserById(id);
-  if (user === null) return { error: 'User not found, use /start to create the user'}
+  if (user === null) return { error: 'User not found, use /start to create the user' }
   user = Object.assign({}, user, { iotas });
   users.update(user);
   return { status: 'success' }
@@ -47,8 +47,16 @@ function setIOTA(id, iotas) {
 
 function setInvestment(id, investment) {
   let user = findUserById(id);
-  if (user === null) return { error: 'User not found, use /start to create the user'}
+  if (user === null) return { error: 'User not found, use /start to create the user' }
   user = Object.assign({}, user, { investment });
+  users.update(user);
+  return { status: 'success' }
+}
+
+function setName(id, name) {
+  let user = findUserById(id);
+  if (user === null) return { error: 'User not found, use /start to create the user' }
+  user = Object.assign({}, user, { name });
   users.update(user);
   return { status: 'success' }
 }
@@ -58,7 +66,7 @@ function setCurrency(id, currency) {
     return { error: 'Currency not supported yet, you can use USD or EUR' }
 
   let user = findUserById(id);
-  if (user === null) return { error: 'User not found, use /start to create the user'}
+  if (user === null) return { error: 'User not found, use /start to create the user' }
   user = Object.assign({}, user, { currency });
   users.update(user);
   return { status: 'success' }
@@ -70,5 +78,6 @@ module.exports = {
   setIOTA,
   setInvestment,
   setCurrency,
+  setName,
   getIOTAValue
 }

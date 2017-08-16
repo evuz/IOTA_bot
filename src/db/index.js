@@ -1,7 +1,7 @@
 const loki = require('lokijs');
 function createDB(name) {
   return new Promise((resolve) => {
-    var db = new loki('IOTA.db', {
+    const db = new loki(name, {
       autoload: true,
       autoloadCallback: () => resolve(db),
       autosave: true,
