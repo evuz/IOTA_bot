@@ -154,6 +154,27 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Save!');
   });
 
+  bot.onText(/\/setCurrency/, (msg, match) => {
+    const chatId = msg.chat.id;
+
+    const opts = {
+      data: 'setCurrency',
+      reply_markup: {
+        inline_keyboard: [
+          [{
+            text: 'USD',
+            callback_data: 'setCurrency USD'
+          }],
+          [{
+            text: 'EUR',
+            callback_data: 'setCurrency EUR'
+          }]
+        ]
+      }
+    };
+    bot.sendMessage(chatId, 'Select your currency', opts);
+  });
+
   bot.onText(/\/helloBot/, async (msg, match) => {
     const chatId = msg.chat.id;
     const user = msg.from;
@@ -174,6 +195,28 @@ function MyTelegramBot(config) {
     const { left_chat_member, new_chat_member } = msg;
     if (left_chat_member) leftChatMember(chat, left_chat_member);
     if (new_chat_member) newChatMember(chat, new_chat_member);
+  })
+
+  bot.on('callback_query', (callbackQuery) => {
+    const chatId = callbackQuery.message.chat.id;
+    const userId = callbackQuery.from.id;
+    const data = callbackQuery.data.split(' ');
+    const [command, value] = data;
+
+    const opts = {
+      chat_id: chatId,
+      message_id: callbackQuery.message.message_id
+    };
+
+    switch (command) {
+      case 'setCurrency':
+        const user = ModelUser.setCurrency(userId, value);
+        if (user.error) return bot.editMessageText(user.error, opts);
+        bot.editMessageText(`${value} selected`, opts);
+        break;
+      default:
+        break;
+    }
   })
 
   function newChatMember(chat, member) {
