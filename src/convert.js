@@ -16,8 +16,19 @@ function convertTo(value, rate) {
   return (value * rate).toFixed(2);
 }
 
+function getSymbol(currency) {
+  const symbols = {
+    EUR: '€',
+    USD: '$'
+  }
+  const symbol = symbols[currency];
+  if (!symbol) throw new Error('Currency not supported');
+  return symbol;
+}
+
 module.exports = {
   USDtoEUR,
   getRates,
+  getSymbol,
   convertTo
 }

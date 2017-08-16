@@ -291,8 +291,8 @@ function MyTelegramBot(config) {
         convert.convertTo(user.profit, 1 / USD);
       const actualProfit = profitFormat - user.inv;
       return `${user.name || user.id}: ${user.iotas} MI is worth ` +
-        `${profitFormat} ${user.currency} ` +
-        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)})`;
+        `${profitFormat}${convert.getSymbol(user.currency)} ` +
+        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})`;
     }).join('\n');
 
     const msg =
