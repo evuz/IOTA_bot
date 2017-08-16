@@ -89,7 +89,7 @@ function MyTelegramBot(config) {
     if (error) return bot.sendMessage(chatId, res.error);
 
     let message = (await getMessageInfoUsers(members)) +
-      `\n\nThat message will be updated every ${min} minutes`;
+      `\n\nThis message will be updated every ${min} minutes`;
     bot.sendMessage(chatId, message)
       .then(({ message_id }) => {
         messageId = message_id;
@@ -129,6 +129,14 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Save!');
   });
 
+  bot.onText(/\/setIOTA/, (msg, match) => {
+    const chatId = msg.chat.id;
+
+    bot.sendMessage(chatId, 'Introduce a value, for example: \n' +
+      '/setIOTA 250'
+    );
+  });
+
   bot.onText(/\/setInvestment (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
@@ -141,6 +149,14 @@ function MyTelegramBot(config) {
     const user = ModelUser.setInvestment(userId, parseInt(value));
     if (user.error) return bot.sendMessage(chatId, user.error);
     bot.sendMessage(chatId, 'Save!');
+  });
+
+  bot.onText(/\/setInvestment/, (msg, match) => {
+    const chatId = msg.chat.id;
+
+    bot.sendMessage(chatId, 'Introduce a value, for example: \n' +
+      '/setInvestment 100'
+    );
   });
 
   bot.onText(/\/setCurrency (.+)/, (msg, match) => {
