@@ -129,7 +129,7 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Save!');
   });
 
-  bot.onText(/\/setIOTA/, (msg) => {
+  bot.onText(/\/setIOTA$/, (msg) => {
     const chatId = msg.chat.id;
 
     bot.sendMessage(chatId, 'Introduce a value, for example: \n' +
@@ -151,7 +151,7 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Save!');
   });
 
-  bot.onText(/\/setInvestment/, (msg) => {
+  bot.onText(/\/setInvestment$/, (msg) => {
     const chatId = msg.chat.id;
 
     bot.sendMessage(chatId, 'Introduce a value, for example: \n' +
@@ -170,7 +170,7 @@ function MyTelegramBot(config) {
     bot.sendMessage(chatId, 'Save!');
   });
 
-  bot.onText(/\/setCurrency/, (msg) => {
+  bot.onText(/\/setCurrency$/, (msg) => {
     const chatId = msg.chat.id;
 
     const opts = {
