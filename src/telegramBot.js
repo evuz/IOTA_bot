@@ -1,6 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const api = require('./api');
 const convert = require('./convert');
+const validate = require('./validate');
 const ModelUser = require('./db/user');
 const ModelChat = require('./db/chat');
 
@@ -72,8 +73,17 @@ function MyTelegramBot(config) {
     if (!isGroup(msg.chat.type)) return;
 
     const chatId = msg.chat.id;
-    const min = match[1];
+    const value = match[1];
     let messageId;
+
+    if (!validate.isNumber(value)) return bot.sendMessage(chatId,
+      'You must introduce a correct number'
+    );
+
+    const min = parseInt(value);
+    if (min < 1) return bot.sendMessage(chatId,
+      'You must introduce a number greater than 0'
+    );
 
     const { members, error } = ModelChat.getMembers(chatId);
     if (error) return bot.sendMessage(chatId, res.error);
@@ -110,7 +120,10 @@ function MyTelegramBot(config) {
     const userId = msg.from.id;
 
     const iotas = match[1];
-    const user = ModelUser.setIOTA(userId, iotas);
+    if (!validate.isNumber(iotas)) return bot.sendMessage(chatId,
+      'You must introduce a correct number'
+    );
+    const user = ModelUser.setIOTA(userId, parseInt(iotas));
 
     if (user.error) return bot.sendMessage(chatId, user.error);
     bot.sendMessage(chatId, 'Save!');
@@ -121,8 +134,11 @@ function MyTelegramBot(config) {
     const userId = msg.from.id;
 
     const value = match[1];
+    if (!validate.isNumber(value)) return bot.sendMessage(chatId,
+      'You must introduce a correct number'
+    );
 
-    const user = ModelUser.setInvestment(userId, value);
+    const user = ModelUser.setInvestment(userId, parseInt(value));
     if (user.error) return bot.sendMessage(chatId, user.error);
     bot.sendMessage(chatId, 'Save!');
   });
