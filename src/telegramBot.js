@@ -2,12 +2,14 @@ const TelegramBot = require('node-telegram-bot-api');
 const api = require('./api');
 const convert = require('./convert');
 const validate = require('./validate');
+const notifications = require('./notifications');
 const ModelUser = require('./db/user');
 const ModelChat = require('./db/chat');
 
 function MyTelegramBot(config) {
   const token = config.token;
   const bot = new TelegramBot(token, { polling: true });
+  const notificationsActive = {};
   let myID;
 
   bot.getMe()
@@ -71,7 +73,7 @@ function MyTelegramBot(config) {
     if (isGroup(chatType)) type = ModelChat.getCurrency(chatId);
 
     const message = await getMessageInfoUsers(members, type);
-    bot.sendMessage(chatId, message, {parse_mode: 'markdown'});
+    bot.sendMessage(chatId, message, { parse_mode: 'markdown' });
   });
 
   bot.onText(/\/infoUpdate (.+)/, async (msg, match) => {
@@ -233,6 +235,19 @@ function MyTelegramBot(config) {
       `${ModelChat.getMemberCount(chatId).members}/${(await bot.getChatMembersCount(chatId)) - 1} members`
     );
   });
+
+  bot.onText(/\/notifications/, (msg) => {
+    const chatId = msg.chat.id;
+    const { processNotifications } = notifications();
+
+    const myNotify = notificationsActive[chatId];
+
+    if (myNotify) clearInterval(myNotify);
+
+    notificationsActive[chatId] = processNotifications(api.getIOTAPrice, (notify) => {
+      bot.sendMessage(chatId, notify);
+    })
+  })
 
   bot.on('message', (msg) => {
     const chat = msg.chat;
