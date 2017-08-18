@@ -65,55 +65,10 @@ function MyTelegramBot(config) {
   });
 
   bot.onText(/\/infoUpdate (.+)/, async (msg, match) => {
-    const chatId = msg.chat.id;
-    const chatType = msg.chat.type;
+    const chat = msg.chat;
     const value = match[1];
-    let messageId;
 
-    if (!validate.isNumber(value)) return bot.sendMessage(chatId,
-      'You must introduce a correct number'
-    );
-
-    const min = parseInt(value);
-    if (min < 1) return bot.sendMessage(chatId,
-      'You must introduce a number greater than 0'
-    );
-
-    const { members, error } = ModelChat.getMembers(chatId);
-    if (error) return bot.sendMessage(chatId, error);
-
-    let type;
-    if (isGroup(chatType)) type = ModelChat.getCurrency(chatId);
-
-    let message = (await getMessageInfoUsers(members, type)) +
-      `\n\nThis message will be updated every ${min} minutes`;
-    bot.sendMessage(chatId, message, { parse_mode: 'markdown' })
-      .then(({ message_id }) => {
-        messageId = message_id;
-        ModelChat.addMessageId(chatId, messageId);
-      });
-
-    const intervalId = setInterval(async () => {
-      const chatMessageId = ModelChat.getMessageId(chatId).messageId;
-      const opts = {
-        message_id: ModelChat.getMessageId(chatId).messageId,
-        chat_id: chatId,
-        parse_mode: 'markdown'
-      };
-
-      if (chatMessageId == messageId) {
-        bot.editMessageText('Updating...', opts);
-
-        const { members } = ModelChat.getMembers(chatId);
-        const date = new Date().toLocaleTimeString('es-ES');
-        let message = (await getMessageInfoUsers(members, type)) +
-          `\n\nThat message will be updated every ${min} minutes ` +
-          `\nLast update: ${date}`;
-        bot.editMessageText(message, opts);
-      } else {
-        clearInterval(intervalId);
-      }
-    }, min * 60 * 1000);
+    setInfoUpdate(chat, value);
   });
 
   bot.onText(/\/setIOTA (.+)/, (msg, match) => {
@@ -222,7 +177,7 @@ function MyTelegramBot(config) {
 
     notificationsActive[chatId] = processNotifications(api.getIOTAPrice, (notify) => {
       bot.sendMessage(chatId, notify);
-    })
+    });
   })
 
   bot.on('message', (msg) => {
@@ -341,6 +296,55 @@ function MyTelegramBot(config) {
       `${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
 
     return message;
+  }
+
+  async function setInfoUpdate(chat, minIntervalUpdate) {
+    let messageId;
+
+    if (!validate.isNumber(minIntervalUpdate)) return bot.sendMessage(chat.id,
+      'You must introduce a correct number'
+    );
+
+    const min = parseInt(minIntervalUpdate);
+    if (min < 1) return bot.sendMessage(chat.id,
+      'You must introduce a number greater than 0'
+    );
+
+    const { members, error } = ModelChat.getMembers(chat.id);
+    if (error) return bot.sendMessage(chat.id, error);
+
+    let type;
+    if (isGroup(chat.type)) type = ModelChat.getCurrency(chat.id);
+
+    let message = (await getMessageInfoUsers(members, type)) +
+      `\n\nThis message will be updated every ${min} minutes`;
+    bot.sendMessage(chat.id, message, { parse_mode: 'markdown' })
+      .then(({ message_id }) => {
+        messageId = message_id;
+        ModelChat.addMessageId(chat.id, messageId);
+      });
+
+    const intervalId = setInterval(async () => {
+      const chatMessageId = ModelChat.getMessageId(chat.id).messageId;
+      const opts = {
+        message_id: ModelChat.getMessageId(chat.id).messageId,
+        chat_id: chat.id,
+        parse_mode: 'markdown'
+      };
+
+      if (chatMessageId == messageId) {
+        bot.editMessageText('Updating...', opts);
+
+        const { members } = ModelChat.getMembers(chat.id);
+        const date = new Date().toLocaleTimeString('es-ES');
+        let message = (await getMessageInfoUsers(members, type)) +
+          `\n\nThat message will be updated every ${min} minutes ` +
+          `\nLast update: ${date}`;
+        bot.editMessageText(message, opts);
+      } else {
+        clearInterval(intervalId);
+      }
+    }, min * 60 * 1000);
   }
 
   function createInlineKeyboard(opts, command) {
