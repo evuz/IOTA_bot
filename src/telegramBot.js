@@ -16,10 +16,13 @@ function MyTelegramBot(config) {
     .then(res => myID = res.id);
 
   bot.onText(/\/start/, (msg) => {
+    if (isGroup(msg.chat.type)) return;
     const chatId = msg.chat.id;
     const user = msg.from;
 
     ModelUser.newUser(user);
+    ModelChat.newChat(chatId);
+    ModelChat.addMemberToChat(chatId, user.id);
     bot.sendMessage(chatId,
       'Welcome!\n' +
       'Use /help to show the commands list');
@@ -63,8 +66,6 @@ function MyTelegramBot(config) {
   });
 
   bot.onText(/\/infoUpdate (.+)/, async (msg, match) => {
-    if (!isGroup(msg.chat.type)) return;
-
     const chatId = msg.chat.id;
     const chatType = msg.chat.type;
     const value = match[1];
@@ -87,7 +88,7 @@ function MyTelegramBot(config) {
 
     let message = (await getMessageInfoUsers(members, type)) +
       `\n\nThis message will be updated every ${min} minutes`;
-    bot.sendMessage(chatId, message)
+    bot.sendMessage(chatId, message, { parse_mode: 'markdown' })
       .then(({ message_id }) => {
         messageId = message_id;
         ModelChat.addMessageId(chatId, messageId);
@@ -95,17 +96,21 @@ function MyTelegramBot(config) {
 
     const intervalId = setInterval(async () => {
       const chatMessageId = ModelChat.getMessageId(chatId).messageId;
+      const opts = {
+        message_id: ModelChat.getMessageId(chatId).messageId,
+        chat_id: chatId,
+        parse_mode: 'markdown'
+      };
+
       if (chatMessageId == messageId) {
+        bot.editMessageText('Updating...', opts);
+
         const { members } = ModelChat.getMembers(chatId);
         const date = new Date().toLocaleTimeString('es-ES');
         let message = (await getMessageInfoUsers(members, type)) +
           `\n\nThat message will be updated every ${min} minutes ` +
           `\nLast update: ${date}`;
-        bot.editMessageText(message,
-          {
-            message_id: ModelChat.getMessageId(chatId).messageId,
-            chat_id: chatId
-          });
+        bot.editMessageText(message, opts);
       } else {
         clearInterval(intervalId);
       }
