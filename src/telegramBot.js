@@ -23,13 +23,13 @@ function MyTelegramBot(config) {
 
   bot.onText(/\/start/, (msg) => {
     if (isGroup(msg.chat.type)) return;
-    const chatId = msg.chat.id;
+    const chat = msg.chat;
     const user = msg.from;
 
     ModelUser.newUser(user);
-    ModelChat.newChat(chatId);
-    ModelChat.addMemberToChat(chatId, user.id);
-    bot.sendMessage(chatId,
+    ModelChat.newChat(chat);
+    ModelChat.addMemberToChat(chat.id, user.id);
+    bot.sendMessage(chat.id,
       'Welcome!\n' +
       'Use /help to show the commands list');
   });
