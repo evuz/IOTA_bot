@@ -96,6 +96,16 @@ function getMembers(chatId) {
   return { members: membersFiltered };
 }
 
+function setNotification(chatId, notification) {
+  const chat = findChatById(chatId);
+  if (chat !== null) {
+    const newChat = Object.assign({}, chat, { notification });
+    chats.update(newChat);
+    return { status: 'success' };
+  }
+  return { error: 'Chat not found' };
+}
+
 module.exports = {
   initCollection,
   newChat,
@@ -106,5 +116,6 @@ module.exports = {
   getMessageId,
   leftMemberToChat,
   getMemberCount,
-  getMembers
+  getMembers,
+  setNotification
 }

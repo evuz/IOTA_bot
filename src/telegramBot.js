@@ -175,9 +175,11 @@ function MyTelegramBot(config) {
 
     if (myNotify) clearInterval(myNotify);
 
+    ModelChat.setNotification(chatId, true);
     notificationsActive[chatId] = processNotifications(api.getIOTAPrice, (notify) => {
       bot.sendMessage(chatId, notify);
     });
+    bot.sendMessage(chatId, 'Notifications enable');
   })
 
   bot.on('message', (msg) => {
