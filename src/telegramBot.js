@@ -229,7 +229,7 @@ function MyTelegramBot(config) {
 
     const chatId = chat.id;
     if (member.id === myID) {
-      ModelChat.newChat(chatId);
+      ModelChat.newChat(chat);
       return bot.sendMessage(chatId, 'Hi! I don\'t know you.' +
         'Please introduce yourself using the command /helloBot'
       );
