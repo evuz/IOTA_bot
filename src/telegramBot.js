@@ -58,11 +58,10 @@ function MyTelegramBot(config) {
 
   bot.onText(/\/infoUser/, async (msg) => {
     const chat = msg.chat;
-    const userId = msg.from.id;
     const opts = Object.assign({}, { parse_mode: 'markdown' },
       createInlineKeyboard(['Update'], 'infoUser'))
 
-    bot.sendMessage(chat.id, await getInfoUser(chat, userId), opts);
+    bot.sendMessage(chat.id, await getInfoUser(chat), opts);
   });
 
   bot.onText(/\/infoUpdate (.+)/, async (msg, match) => {
@@ -263,7 +262,7 @@ function MyTelegramBot(config) {
         bot.editMessageText('Updating...', opts);
         const newOpts = Object.assign({}, opts, { parse_mode: 'markdown' },
           createInlineKeyboard(['Update'], 'infoUser'))
-        bot.editMessageText(await getInfoUser(chat, userId), newOpts);
+        bot.editMessageText(await getInfoUser(chat), newOpts);
         break;
       }
       default:
@@ -294,15 +293,10 @@ function MyTelegramBot(config) {
     ModelChat.leftMemberToChat(chatId, member.id)
   }
 
-  async function getInfoUser(chat, userId) {
-    let members;
-    if (isGroup(chat.type)) {
-      const res = ModelChat.getMembers(chat.id);
-      if (res.error) return bot.sendMessage(chat.id, res.error);
-      members = res.members;
-    } else {
-      members = [userId];
-    }
+  async function getInfoUser(chat) {
+    const { error, members } = ModelChat.getMembers(chat.id);
+
+    if (error) return bot.sendMessage(chat.id, error);
 
     let type;
     if (isGroup(chat.type)) type = ModelChat.getCurrency(chat.id);
