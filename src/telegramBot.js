@@ -54,23 +54,12 @@ function MyTelegramBot(config) {
   });
 
   bot.onText(/\/infoUser/, async (msg) => {
-    const chatId = msg.chat.id;
-    const chatType = msg.chat.type;
+    const chat = msg.chat;
+    const userId = msg.from.id;
+    const opts = Object.assign({}, { parse_mode: 'markdown' },
+      createInlineKeyboard(['Update'], 'infoUser'))
 
-    let members;
-    if (isGroup(msg.chat.type)) {
-      const res = ModelChat.getMembers(chatId);
-      if (res.error) return bot.sendMessage(chatId, res.error);
-      members = res.members;
-    } else {
-      members = [msg.from.id];
-    }
-
-    let type;
-    if (isGroup(chatType)) type = ModelChat.getCurrency(chatId);
-
-    const message = await getMessageInfoUsers(members, type);
-    bot.sendMessage(chatId, message, { parse_mode: 'markdown' });
+    bot.sendMessage(chat.id, await getInfoUser(chat, userId), opts);
   });
 
   bot.onText(/\/infoUpdate (.+)/, async (msg, match) => {
@@ -265,6 +254,13 @@ function MyTelegramBot(config) {
         bot.editMessageText(await getInfoIOTA(), newOpts);
         break;
       }
+      case 'infoUser': {
+        bot.editMessageText('Updating...', opts);
+        const newOpts = Object.assign({}, opts, { parse_mode: 'markdown' },
+          createInlineKeyboard(['Update'], 'infoUser'))
+        bot.editMessageText(await getInfoUser(chat, userId), newOpts);
+        break;
+      }
       default:
         break;
     }
@@ -291,6 +287,23 @@ function MyTelegramBot(config) {
 
     const chatId = chat.id;
     ModelChat.leftMemberToChat(chatId, member.id)
+  }
+
+  async function getInfoUser(chat, userId) {
+    let members;
+    if (isGroup(chat.type)) {
+      const res = ModelChat.getMembers(chat.id);
+      if (res.error) return bot.sendMessage(chat.id, res.error);
+      members = res.members;
+    } else {
+      members = [userId];
+    }
+
+    let type;
+    if (isGroup(chat.type)) type = ModelChat.getCurrency(chat.id);
+
+    const message = await getMessageInfoUsers(members, type);
+    return message;
   }
 
   async function getMessageInfoUsers(members, type) {
