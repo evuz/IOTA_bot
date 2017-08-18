@@ -12,8 +12,14 @@ function MyTelegramBot(config) {
   const notificationsActive = {};
   let myID;
 
-  bot.getMe()
-    .then(res => myID = res.id);
+  init();
+
+  function init() {
+    bot.getMe()
+      .then(res => myID = res.id);
+    runMessageUpdate();
+    runNotifications();
+  }
 
   bot.onText(/\/start/, (msg) => {
     if (isGroup(msg.chat.type)) return;
@@ -169,17 +175,8 @@ function MyTelegramBot(config) {
 
   bot.onText(/\/notifications/, (msg) => {
     const chatId = msg.chat.id;
-    const { processNotifications } = notifications();
 
-    const myNotify = notificationsActive[chatId];
-
-    if (myNotify) clearInterval(myNotify);
-
-    ModelChat.setNotification(chatId, true);
-    notificationsActive[chatId] = processNotifications(api.getIOTAPrice, (notify) => {
-      bot.sendMessage(chatId, notify);
-    });
-    bot.sendMessage(chatId, 'Notifications enable');
+    setNotification(chatId);
   })
 
   bot.on('message', (msg) => {
@@ -300,9 +297,21 @@ function MyTelegramBot(config) {
     return message;
   }
 
-  async function setInfoUpdate(chat, minIntervalUpdate) {
-    let messageId;
+  async function setNotification(chatId, silent) {
+    const { processNotifications } = notifications();
 
+    const myNotify = notificationsActive[chatId];
+
+    if (myNotify) clearInterval(myNotify);
+
+    ModelChat.setNotification(chatId, true);
+    notificationsActive[chatId] = processNotifications(api.getIOTAPrice, (notify) => {
+      bot.sendMessage(chatId, notify);
+    });
+    if(!silent) bot.sendMessage(chatId, 'Notifications enable');
+  }
+
+  async function setInfoUpdate(chat, minIntervalUpdate, messageId) {
     if (!validate.isNumber(minIntervalUpdate)) return bot.sendMessage(chat.id,
       'You must introduce a correct number'
     );
@@ -320,11 +329,14 @@ function MyTelegramBot(config) {
 
     let message = (await getMessageInfoUsers(members, type)) +
       `\n\nThis message will be updated every ${min} minutes`;
-    bot.sendMessage(chat.id, message, { parse_mode: 'markdown' })
-      .then(({ message_id }) => {
-        messageId = message_id;
-        ModelChat.addMessageId(chat.id, messageId);
-      });
+    if (!messageId) {
+      bot.sendMessage(chat.id, message, { parse_mode: 'markdown' })
+        .then(({ message_id }) => {
+          messageId = message_id;
+          ModelChat.setMessageId(chat.id, messageId);
+          ModelChat.setUpdateInterval(chat.id, min);
+        });
+    }
 
     const intervalId = setInterval(async () => {
       const chatMessageId = ModelChat.getMessageId(chat.id).messageId;
@@ -347,6 +359,18 @@ function MyTelegramBot(config) {
         clearInterval(intervalId);
       }
     }, min * 60 * 1000);
+  }
+
+  function runMessageUpdate() {
+    const chats = ModelChat.getChatsWithMessageId();
+    chats.forEach((chat) => {
+      setInfoUpdate({ id: chat.id, type: chat.type }, chat.minsUpdateInterval, chat.messageId);
+    })
+  }
+
+  function runNotifications() {
+    const chats = ModelChat.getChatsByNotification(true);
+    chats.forEach((chat) => setNotification(chat.id, true));
   }
 
   function createInlineKeyboard(opts, command) {

@@ -9,14 +9,24 @@ function initCollection(newDB) {
   }
 }
 
+function getChatsByNotification(notification) {
+  return chats.find({ notification });
+}
+
+function getChatsWithMessageId() {
+  const allChats = chats.find();
+  return allChats.filter((chat) => chat.messageId);
+}
+
 function findChatById(id) {
   return chats.findOne({ id });
 }
 
-function newChat(id) {
+function newChat(newChat) {
+  const { id, type } = newChat;
   const chat = findChatById(id);
   if (chat === null) {
-    return chats.insert({ id, members: {} });
+    return chats.insert({ id, type, members: {} });
   }
   return chat;
 }
@@ -48,10 +58,20 @@ function addMemberToChat(chatId, userId) {
   return { error: 'Chat not found' };
 }
 
-function addMessageId(chatId, messageId) {
+function setMessageId(chatId, messageId) {
   const chat = findChatById(chatId);
   if (chat !== null) {
     const newChat = Object.assign({}, chat, { messageId });
+    chats.update(newChat);
+    return { status: 'success' };
+  }
+  return { error: 'Chat not found' };
+}
+
+function setUpdateInterval(chatId, minsUpdateInterval) {
+  const chat = findChatById(chatId);
+  if (chat !== null) {
+    const newChat = Object.assign({}, chat, { minsUpdateInterval });
     chats.update(newChat);
     return { status: 'success' };
   }
@@ -108,11 +128,14 @@ function setNotification(chatId, notification) {
 
 module.exports = {
   initCollection,
+  getChatsByNotification,
+  getChatsWithMessageId,
   newChat,
   setCurrency,
   getCurrency,
   addMemberToChat,
-  addMessageId,
+  setMessageId,
+  setUpdateInterval,
   getMessageId,
   leftMemberToChat,
   getMemberCount,
