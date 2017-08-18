@@ -47,13 +47,10 @@ function MyTelegramBot(config) {
   bot.onText(/\/infoIOTA/, async (msg) => {
     const chatId = msg.chat.id;
 
-    const { timestamp, price } = await api.getIOTAPrice();
-    const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+    const opts = createInlineKeyboard(['Update'], 'infoIOTA');
+    const message = await getInfoIOTA();
 
-    bot.sendMessage(chatId,
-      `IOTA price at ${date}:\n` +
-      `${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
-    )
+    bot.sendMessage(chatId, message, opts);
   });
 
   bot.onText(/\/infoUser/, async (msg) => {
@@ -186,21 +183,7 @@ function MyTelegramBot(config) {
   bot.onText(/\/setCurrency$/, (msg) => {
     const chatId = msg.chat.id;
 
-    const opts = {
-      data: 'setCurrency',
-      reply_markup: {
-        inline_keyboard: [
-          [{
-            text: 'USD',
-            callback_data: 'setCurrency USD'
-          }],
-          [{
-            text: 'EUR',
-            callback_data: 'setCurrency EUR'
-          }]
-        ]
-      }
-    };
+    const opts = createInlineKeyboard(['EUR', 'USD'], 'setCurrency');
     bot.sendMessage(chatId, 'Select your currency', opts);
   });
 
@@ -256,7 +239,7 @@ function MyTelegramBot(config) {
     if (new_chat_member) newChatMember(chat, new_chat_member);
   })
 
-  bot.on('callback_query', (callbackQuery) => {
+  bot.on('callback_query', async (callbackQuery) => {
     const chat = callbackQuery.message.chat;
     const userId = callbackQuery.from.id;
     const data = callbackQuery.data.split(' ');
@@ -274,6 +257,12 @@ function MyTelegramBot(config) {
         else user = ModelUser.setCurrency(userId, value);
         if (user.error) return bot.editMessageText(user.error, opts);
         bot.editMessageText(`${value} selected`, opts);
+        break;
+      }
+      case 'infoIOTA': {
+        bot.editMessageText('Updating...', opts);
+        const newOpts = Object.assign({}, opts, createInlineKeyboard(['Update'], 'infoIOTA'));
+        bot.editMessageText(await getInfoIOTA(), newOpts);
         break;
       }
       default:
@@ -330,6 +319,30 @@ function MyTelegramBot(config) {
       memberText;
 
     return msg;
+  }
+
+  async function getInfoIOTA() {
+    const { timestamp, price } = await api.getIOTAPrice();
+    const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+
+    const message = `IOTA price at ${date}:\n` +
+      `${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
+
+    return message;
+  }
+
+  function createInlineKeyboard(opts, command) {
+    const buttons = Object.keys(opts).map((key) => {
+      return {
+        text: opts[key],
+        callback_data: `${command} ${opts[key]}`
+      }
+    })
+    return {
+      reply_markup: {
+        inline_keyboard: [buttons]
+      }
+    };
   }
 
   function isGroup(type) {
