@@ -286,10 +286,15 @@ function MyTelegramBot(config) {
     }).filter((member) => member)
       .sort((a, b) => b.actualProfit - a.actualProfit);
 
+    const maxLengthProfit = members.reduce((max, member) => {
+      const profitLength = Math.round(member.profit).toString().length;
+      return profitLength > max ? profitLength : max;
+    }, 0);
+
     const memberText = members.map((user) => {
       return format.paddingText(user.name, { size: 7, add: ':' }) +
         format.paddingText(user.iotas, { add: 'MI', align: 'right', size: 8 }) + ' ~ ' +
-        format.paddingText(Math.round(user.profit), { size: 6, add: convert.getSymbol(user.currency), align: 'right' }) +
+        format.paddingText(Math.round(user.profit), { size: maxLengthProfit + 1, add: convert.getSymbol(user.currency), align: 'right' }) +
         ` (${user.actualProfit < 0 ? '' : '+'}${user.actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})`;
     }).join('\n');
 

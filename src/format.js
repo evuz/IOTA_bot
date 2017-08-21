@@ -4,10 +4,11 @@ function monospaceFormat(text) {
 
 function paddingText(text, opts = {}) {
   const { align = '', size, add = '' } = opts;
+  text = typeof text === 'number' ? text.toString() : text;
   const lengthText = typeof text == 'number' ? text.toString().length : text.length;
   let message;
   if (size) {
-    if (lengthText + add.length >= size) {
+    if (lengthText + add.length > size) {
       message = text.substring(0, size - 2 - add.length) + '..' + add;
     } else {
       if (align.toLowerCase() === 'right') {
