@@ -263,7 +263,7 @@ function MyTelegramBot(config) {
     const { timestamp, price } = await api.getIOTAPrice();
     const { USD } = await convert.getRates();
     const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
-    const memberText = members.map((member) => {
+    members = members.map((member) => {
       const user = ModelUser.getIOTAValue(parseInt(member), price);
       if (user.error)
         return null;
@@ -274,9 +274,21 @@ function MyTelegramBot(config) {
         user.profit.toFixed(2) :
         convert.convertTo(user.profit, 1 / USD);
       const actualProfit = profitFormat - user.inv;
+
+      return {
+        name: user.name || user.id,
+        iotas: user.iotas,
+        profit: profitFormat,
+        currency,
+        actualProfit
+      };
+    }).filter((member) => member)
+      .sort((a, b) => b.actualProfit - a.actualProfit);
+
+    const memberText = members.map((user) => {
       return `\`\`\` ${user.name || user.id}: ${user.iotas}MI ~ ` +
-        `${profitFormat}${convert.getSymbol(currency)} ` +
-        `(${actualProfit < 0 ? '-' : '+'}${actualProfit.toFixed(2)}${convert.getSymbol(currency)})\`\`\``;
+        `${user.profit}${convert.getSymbol(user.currency)} ` +
+        `(${user.actualProfit < 0 ? '' : '+'}${user.actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})\`\`\``;
     }).join('\n');
 
     const msg =
@@ -308,7 +320,7 @@ function MyTelegramBot(config) {
     notificationsActive[chatId] = processNotifications(api.getIOTAPrice, (notify) => {
       bot.sendMessage(chatId, notify);
     });
-    if(!silent) bot.sendMessage(chatId, 'Notifications enable');
+    if (!silent) bot.sendMessage(chatId, 'Notifications enable');
   }
 
   async function setInfoUpdate(chat, minIntervalUpdate, messageId) {
