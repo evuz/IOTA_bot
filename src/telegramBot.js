@@ -283,12 +283,12 @@ function MyTelegramBot(config) {
         actualProfit
       };
     }).filter((member) => member)
-      .sort((a, b) => a.actualProfit - b.actualProfit);
+      .sort((a, b) => b.actualProfit - a.actualProfit);
 
     const memberText = members.map((user) => {
       return `\`\`\` ${user.name || user.id}: ${user.iotas}MI ~ ` +
         `${user.profit}${convert.getSymbol(user.currency)} ` +
-        `(${user.actualProfit < 0 ? '-' : '+'}${user.actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})\`\`\``;
+        `(${user.actualProfit < 0 ? '' : '+'}${user.actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})\`\`\``;
     }).join('\n');
 
     const msg =
