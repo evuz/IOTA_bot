@@ -3,6 +3,7 @@ const api = require('./api');
 const convert = require('./convert');
 const validate = require('./validate');
 const notifications = require('./notifications');
+const format = require('./format');
 const ModelUser = require('./db/user');
 const ModelChat = require('./db/chat');
 
@@ -286,9 +287,10 @@ function MyTelegramBot(config) {
       .sort((a, b) => b.actualProfit - a.actualProfit);
 
     const memberText = members.map((user) => {
-      return `\`\`\` ${user.name || user.id}: ${user.iotas}MI ~ ` +
-        `${user.profit}${convert.getSymbol(user.currency)} ` +
-        `(${user.actualProfit < 0 ? '' : '+'}${user.actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})\`\`\``;
+      return format.paddingText(user.name, { size: 7, add: ':' }) +
+        format.paddingText(user.iotas, { add: 'MI', align: 'right', size: 8 }) + ' ~ ' +
+        format.paddingText(Math.round(user.profit), { size: 6, add: convert.getSymbol(user.currency), align: 'right' }) +
+        ` (${user.actualProfit < 0 ? '' : '+'}${user.actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})`;
     }).join('\n');
 
     const msg =
@@ -296,7 +298,7 @@ function MyTelegramBot(config) {
       `${price}$ = ${(convert.convertTo(price, 1 / USD))}€\n\n` +
       memberText;
 
-    return msg;
+    return format.monospaceFormat(msg);
   }
 
   async function getInfoIOTA() {
@@ -340,7 +342,7 @@ function MyTelegramBot(config) {
     if (isGroup(chat.type)) type = ModelChat.getCurrency(chat.id);
 
     let message = (await getMessageInfoUsers(members, type)) +
-      `\n\nThis message will be updated every ${min} minutes`;
+      format.monospaceFormat(`\nThis message will be updated every ${min} minutes`);
     if (!messageId) {
       bot.sendMessage(chat.id, message, { parse_mode: 'markdown' })
         .then(({ message_id }) => {
@@ -364,8 +366,8 @@ function MyTelegramBot(config) {
         const { members } = ModelChat.getMembers(chat.id);
         const date = new Date().toLocaleTimeString('es-ES');
         let message = (await getMessageInfoUsers(members, type)) +
-          `\n\nThat message will be updated every ${min} minutes ` +
-          `\nLast update: ${date}`;
+          format.monospaceFormat(`\nThat message will be updated every ${min} minutes ` +
+            `\nLast update: ${date}`);
         bot.editMessageText(message, opts);
       } else {
         clearInterval(intervalId);
