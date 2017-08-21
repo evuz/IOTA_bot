@@ -9,7 +9,7 @@ function paddingText(text, opts = {}) {
   let message;
   if (size) {
     if (lengthText + add.length > size) {
-      message = text.substring(0, size - 2 - add.length) + '..' + add;
+      message = text.substring(0, size - add.length) + add;
     } else {
       if (align.toLowerCase() === 'right') {
         message = new Array(size - lengthText - add.length).fill(' ').join('') + text + add;
