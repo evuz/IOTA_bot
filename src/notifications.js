@@ -24,7 +24,6 @@ function notificationsAlgorithm() {
 
             if (currentValue < inflectionValue) {
               trending = TrendingType.Decreasing;
-              inflectionValue = currentValue;
               numIntervalsKeeping = 0;
             } else if (inflectionValue + delta <= currentValue) {
               numIntervalsKeeping++;
@@ -36,7 +35,6 @@ function notificationsAlgorithm() {
 
             if (currentValue >= inflectionValue) {
               trending = TrendingType.Increasing;
-              inflectionValue = currentValue;
               numIntervalsKeeping = 0;
             } else if (inflectionValue - delta > currentValue) {
               numIntervalsKeeping++;
