@@ -14,18 +14,17 @@ function notificationsAlgorithm() {
     let numIntervalsKeeping = 0;
 
     return setInterval(() => {
-      getCurrentValue()
-        .then((currentValue) => {
-          currentValue = currentValue.price;
+      getCurrentValue(20)
+        .then(({ avg: avgValue, current: currentValue }) => {
 
           if (typeof inflectionValue == 'undefined') { //First iteration
-            inflectionValue = currentValue;
+            inflectionValue = avgValue;
           } else if (trending == TrendingType.Increasing) {
 
-            if (currentValue < inflectionValue) {
+            if (avgValue < inflectionValue) {
               trending = TrendingType.Decreasing;
               numIntervalsKeeping = 0;
-            } else if (inflectionValue + delta <= currentValue) {
+            } else if (inflectionValue + delta <= avgValue) {
               numIntervalsKeeping++;
             } else {
               numIntervalsKeeping = 0;
@@ -33,10 +32,10 @@ function notificationsAlgorithm() {
 
           } else if (trending == TrendingType.Decreasing) {
 
-            if (currentValue >= inflectionValue) {
+            if (avgValue >= inflectionValue) {
               trending = TrendingType.Increasing;
               numIntervalsKeeping = 0;
-            } else if (inflectionValue - delta > currentValue) {
+            } else if (inflectionValue - delta > avgValue) {
               numIntervalsKeeping++;
             } else {
               numIntervalsKeeping = 0;
@@ -45,7 +44,7 @@ function notificationsAlgorithm() {
 
           if (numIntervalsKeeping == numIntervalsFilter) {
             sendMessage(notify(currentValue, trending));
-            inflectionValue = currentValue;
+            inflectionValue = avgValue;
             numIntervalsKeeping = 0;
           }
         });

@@ -324,7 +324,7 @@ function MyTelegramBot(config) {
     if (myNotify) clearInterval(myNotify);
 
     ModelChat.setNotification(chatId, true);
-    notificationsActive[chatId] = processNotifications(api.getIOTAPrice, (notify) => {
+    notificationsActive[chatId] = processNotifications(api.getAveragePrice, (notify) => {
       bot.sendMessage(chatId, notify);
     });
     if (!silent) bot.sendMessage(chatId, 'Notifications enable');
