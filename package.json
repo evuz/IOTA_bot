@@ -7,6 +7,8 @@
     "axios": "^0.16.2",
     "eslint": "^4.4.1",
     "lokijs": "^1.5.0",
+    "moment": "^2.18.1",
+    "moment-timezone": "^0.5.13",
     "node-telegram-bot-api": "^0.27.1",
     "nodemon": "^1.11.0"
   },

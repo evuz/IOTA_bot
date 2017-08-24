@@ -1,9 +1,11 @@
 const TelegramBot = require('node-telegram-bot-api');
+
 const api = require('./api');
 const convert = require('./convert');
 const validate = require('./validate');
 const notifications = require('./notifications');
 const format = require('./format');
+const dateFormat = require('./date');
 const ModelUser = require('./db/user');
 const ModelChat = require('./db/chat');
 
@@ -58,7 +60,11 @@ function MyTelegramBot(config) {
     const chatId = msg.chat.id;
 
     const opts = createInlineKeyboard(['Update'], 'infoIOTA');
-    const message = await getInfoIOTA();
+    const zone = isGroup(msg.chat.type) ?
+      ModelChat.getTimezone(chatId) :
+      ModelUser.getTimezone(msg.from.id);
+
+    const message = await getInfoIOTA(zone.timezone);
 
     bot.sendMessage(chatId, message, opts);
   });
@@ -159,6 +165,24 @@ function MyTelegramBot(config) {
     );
   });
 
+  bot.onText(/\/setTimezone (.+)/, (msg, match) => {
+    const chatId = msg.chat.id;
+    const zone = match[1];
+
+    if (!dateFormat.exist(zone))
+      return bot.sendMessage('Your timezone is not correct');
+
+    let res;
+    if (isGroup(msg.chat.type)) {
+      res = ModelChat.setTimezone(chatId, zone)
+    } else {
+      res = ModelUser.setTimezone(msg.from.id, zone);
+    }
+    if (res.error) return bot.sendMessage(chatId, res.error);
+
+    bot.sendMessage(chatId, 'Save!');
+  });
+
   bot.onText(/\/helloBot/, async (msg) => {
     const chatId = msg.chat.id;
     const user = msg.from;
@@ -210,7 +234,10 @@ function MyTelegramBot(config) {
       case 'infoIOTA': {
         bot.editMessageText('Updating...', opts);
         const newOpts = Object.assign({}, opts, createInlineKeyboard(['Update'], 'infoIOTA'));
-        bot.editMessageText(await getInfoIOTA(), newOpts);
+        const zone = isGroup(chat.type) ?
+          ModelChat.getTimezone(chat.id) :
+          ModelUser.getTimezone(userId);
+        bot.editMessageText(await getInfoIOTA(zone.timezone), newOpts);
         break;
       }
       case 'infoUser': {
@@ -218,6 +245,17 @@ function MyTelegramBot(config) {
         const newOpts = Object.assign({}, opts, { parse_mode: 'markdown' },
           createInlineKeyboard(['Update'], 'infoUser'))
         bot.editMessageText(await getInfoUser(chat), newOpts);
+        break;
+      }
+      case 'setTimezone': {
+        const zones = dateFormat.getZonesWith(value);
+
+        const myZones = zones.slice(0, 9).concat(
+          { text: 'More..', info: 'more_0' }
+        );
+        const newOpts = Object.assign({}, opts,
+          createInlineKeyboard(myZones, 'setTimezone_2'));
+        bot.editMessageText('Set your country', newOpts);
         break;
       }
       default:
@@ -306,9 +344,9 @@ function MyTelegramBot(config) {
     return format.monospaceFormat(msg);
   }
 
-  async function getInfoIOTA() {
+  async function getInfoIOTA(zone) {
     const { timestamp, price } = await api.getIOTAPrice();
-    const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+    const date = dateFormat.getDateFormat(timestamp * 1000, zone);
 
     const message = `IOTA price at ${date}:\n` +
       `${price}$ = ${(await convert.USDtoEUR(price)).toFixed(4)}€`
@@ -393,15 +431,21 @@ function MyTelegramBot(config) {
   }
 
   function createInlineKeyboard(opts, command) {
-    const buttons = Object.keys(opts).map((key) => {
-      return {
-        text: opts[key],
-        callback_data: `${command} ${opts[key]}`
+    const buttons = opts.map((key) => {
+      let info = key;
+      let text = key;
+      if (typeof key === 'object') {
+        info = key.info;
+        text = key.text;
       }
+      return [{
+        text: text,
+        callback_data: `${command} ${info}`
+      }]
     })
     return {
       reply_markup: {
-        inline_keyboard: [buttons]
+        inline_keyboard: buttons
       }
     };
   }

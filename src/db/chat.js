@@ -126,6 +126,23 @@ function setNotification(chatId, notification) {
   return { error: 'Chat not found' };
 }
 
+function setTimezone(chatId, timezone) {
+  const chat = findChatById(chatId);
+  if (chat !== null) {
+    const newChat = Object.assign({}, chat, { timezone });
+    chats.update(newChat);
+    return { status: 'success' };
+  }
+  return { error: 'Chat not found' };
+}
+
+function getTimezone(chatId) {
+  const chat = findChatById(chatId);
+  if (chat === null) return { error: 'Chat not found' };
+  const { timezone } = chat;
+  return { timezone: timezone || 'Etc/GMT' };
+}
+
 module.exports = {
   initCollection,
   getChatsByNotification,
@@ -140,5 +157,7 @@ module.exports = {
   leftMemberToChat,
   getMemberCount,
   getMembers,
-  setNotification
+  setNotification,
+  setTimezone,
+  getTimezone
 }

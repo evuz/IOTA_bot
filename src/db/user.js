@@ -72,6 +72,23 @@ function setCurrency(id, currency) {
   return { status: 'success' }
 }
 
+function setTimezone(userId, timezone) {
+  const user = findUserById(userId);
+  if (user !== null) {
+    const newuser = Object.assign({}, user, { timezone });
+    users.update(newuser);
+    return { status: 'success' };
+  }
+  return { error: 'user not found' };
+}
+
+function getTimezone(userId) {
+  const user = findUserById(userId);
+  if (user === null) return { error: 'user not found' };
+  const { timezone } = user;
+  return { timezone: timezone || 'Etc/GMT' };
+}
+
 module.exports = {
   initCollection,
   newUser,
@@ -79,5 +96,7 @@ module.exports = {
   setInvestment,
   setCurrency,
   setName,
-  getIOTAValue
+  getIOTAValue,
+  setTimezone,
+  getTimezone
 }
