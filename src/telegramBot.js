@@ -432,15 +432,12 @@ function MyTelegramBot(config) {
 
   function createInlineKeyboard(opts, command) {
     const buttons = opts.map((key) => {
-      let info = key;
-      let text = key;
-      if (typeof key === 'object') {
-        info = key.info;
-        text = key.text;
+      if (typeof key === 'string') {
+        key = { text: key };
       }
       return [{
-        text: text,
-        callback_data: `${command} ${info}`
+        text: key.text,
+        callback_data: `${command} ${key.info || key.text}`
       }]
     })
     return {
