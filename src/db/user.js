@@ -31,6 +31,7 @@ function getIOTAValue(id, priceIOTA) {
       profit: user.iotas * priceIOTA,
       inv: user.investment,
       iotas: user.iotas,
+      timezone: user.timezone,
       currency: user.currency || 'USD'
     }
   }

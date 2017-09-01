@@ -292,23 +292,26 @@ function MyTelegramBot(config) {
 
     if (error) return bot.sendMessage(chat.id, error);
 
-    let type;
-    if (isGroup(chat.type)) type = ModelChat.getCurrency(chat.id);
+    const type = isGroup(chat.type) ? ModelChat.getCurrency(chat.id) : undefined;
+    const zone = isGroup(chat.type) ? ModelChat.getTimezone(chat.id) : undefined;
 
-    const message = await getMessageInfoUsers(members, type);
+    const message = await getMessageInfoUsers(members, { type, zone });
     return message;
   }
 
-  async function getMessageInfoUsers(members, type) {
+  async function getMessageInfoUsers(members, { type, zone }) {
     const { timestamp, price } = await api.getIOTAPrice();
     const { USD } = await convert.getRates();
-    const date = new Date(timestamp * 1000).toLocaleTimeString('es-ES');
+
     members = members.map((member) => {
       const user = ModelUser.getIOTAValue(parseInt(member), price);
       if (user.error)
         return null;
 
       const currency = type || user.currency;
+      zone = zone || user.timezone;
+
+      console.log(user);
 
       const profitFormat = currency === 'USD' ?
         user.profit.toFixed(2) :
@@ -337,6 +340,7 @@ function MyTelegramBot(config) {
         ` (${user.actualProfit < 0 ? '' : '+'}${user.actualProfit.toFixed(2)}${convert.getSymbol(user.currency)})`;
     }).join('\n');
 
+    const date = dateFormat.getDateFormat(timestamp * 1000, zone);
     const msg =
       `IOTA price at ${date}:\n` +
       `${price}$ = ${(convert.convertTo(price, 1 / USD))}€\n\n` +
@@ -382,10 +386,10 @@ function MyTelegramBot(config) {
     const { members, error } = ModelChat.getMembers(chat.id);
     if (error) return bot.sendMessage(chat.id, error);
 
-    let type;
-    if (isGroup(chat.type)) type = ModelChat.getCurrency(chat.id);
+    const type = isGroup(chat.type) ? ModelChat.getCurrency(chat.id) : undefined;
+    const zone = isGroup(chat.type) ? ModelChat.getTimezone(chat.id) : undefined;
 
-    let message = (await getMessageInfoUsers(members, type)) +
+    const message = (await getMessageInfoUsers(members, { type, zone })) +
       format.monospaceFormat(`\nThis message will be updated every ${min} minutes`);
     if (!messageId) {
       bot.sendMessage(chat.id, message, { parse_mode: 'markdown' })
@@ -409,7 +413,7 @@ function MyTelegramBot(config) {
 
         const { members } = ModelChat.getMembers(chat.id);
         const date = new Date().toLocaleTimeString('es-ES');
-        let message = (await getMessageInfoUsers(members, type)) +
+        let message = (await getMessageInfoUsers(members, { type, zone })) +
           format.monospaceFormat(`\nThat message will be updated every ${min} minutes ` +
             `\nLast update: ${date}`);
         bot.editMessageText(message, opts);
