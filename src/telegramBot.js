@@ -311,8 +311,6 @@ function MyTelegramBot(config) {
       const currency = type || user.currency;
       zone = zone || user.timezone;
 
-      console.log(user);
-
       const profitFormat = currency === 'USD' ?
         user.profit.toFixed(2) :
         convert.convertTo(user.profit, 1 / USD);
