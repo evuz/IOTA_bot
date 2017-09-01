@@ -10,7 +10,8 @@
     "moment": "^2.18.1",
     "moment-timezone": "^0.5.13",
     "node-telegram-bot-api": "^0.27.1",
-    "nodemon": "^1.11.0"
+    "nodemon": "^1.11.0",
+    "tzwhere": "^1.0.0"
   },
   "scripts": {
     "start": "node src/index.js",

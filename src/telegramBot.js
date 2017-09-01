@@ -24,6 +24,22 @@ function MyTelegramBot(config) {
     runNotifications();
   }
 
+  bot.on('location', (msg) => {
+    const { chat, location } = msg;
+    const zone = dateFormat.getTimezoneToCoordinates(location['latitude'], location['longitude']);
+    let res;
+
+    if (isGroup(msg.chat.type)) {
+      res = ModelChat.setTimezone(chatId, zone);
+    } else {
+      res = ModelUser.setTimezone(msg.from.id, zone);
+    }
+
+    if (res.error) return bot.sendMessage(chat.id, res.error);
+
+    bot.sendMessage(chat.id, `Save your timezone like as: ${zone}`);
+  })
+
   bot.onText(/\/start/, (msg) => {
     if (isGroup(msg.chat.type)) return;
     const chat = msg.chat;

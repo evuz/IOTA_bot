@@ -1,6 +1,8 @@
 const moment = require('moment');
+const tzwhere = require('tzwhere');
 const tz = require('moment-timezone'); // eslint-disable-line
 
+tzwhere.init()
 
 function getZonesWith(str) {
   const zones = moment.tz.names();
@@ -16,8 +18,13 @@ function getDateFormat(time, timezone) {
   return date.format("hh:mm:ss a");
 }
 
+function getTimezoneToCoordinates(lat, long) {
+  return tzwhere.tzNameAt(lat, long);
+}
+
 module.exports = {
   getZonesWith,
   exist,
-  getDateFormat
+  getDateFormat,
+  getTimezoneToCoordinates
 }
