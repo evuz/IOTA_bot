@@ -261,6 +261,7 @@ function MyTelegramBot(config) {
       default:
         break;
     }
+    bot.answerCallbackQuery(callbackQuery.id, null, { show_alert: false });
   })
 
   function newChatMember(chat, member) {
