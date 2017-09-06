@@ -293,7 +293,7 @@ function MyTelegramBot(config) {
     if (error) return bot.sendMessage(chat.id, error);
 
     const type = isGroup(chat.type) ? ModelChat.getCurrency(chat.id) : undefined;
-    const zone = isGroup(chat.type) ? ModelChat.getTimezone(chat.id) : undefined;
+    const zone = isGroup(chat.type) ? ModelChat.getTimezone(chat.id).timezone : undefined;
 
     const message = await getMessageInfoUsers(members, { type, zone });
     return message;

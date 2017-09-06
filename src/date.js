@@ -13,7 +13,7 @@ function exist(timezone) {
 
 function getDateFormat(time, timezone) {
   const date = moment.tz(time, timezone || 'Etc/GMT');
-  return date.format("hh:mm:ss a");
+  return date.format("HH:mm:ss");
 }
 
 module.exports = {
