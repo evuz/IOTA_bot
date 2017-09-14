@@ -30,7 +30,7 @@ function MyTelegramBot(config) {
     let res;
 
     if (isGroup(msg.chat.type)) {
-      res = ModelChat.setTimezone(chatId, zone);
+      res = ModelChat.setTimezone(chat.id, zone);
     } else {
       res = ModelUser.setTimezone(msg.from.id, zone);
     }
