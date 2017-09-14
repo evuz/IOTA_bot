@@ -15,7 +15,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "nodemon --inspect src/index.js",
     "lint": "eslint src/**/*.js src/*.js"
   }
 }
