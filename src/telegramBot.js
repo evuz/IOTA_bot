@@ -309,7 +309,7 @@ function MyTelegramBot(config) {
     if (error) return bot.sendMessage(chat.id, error);
 
     const type = isGroup(chat.type) ? ModelChat.getCurrency(chat.id) : undefined;
-    const zone = isGroup(chat.type) ? ModelChat.getTimezone(chat.id) : undefined;
+    const zone = isGroup(chat.type) ? ModelChat.getTimezone(chat.id).timezone : undefined;
 
     const message = await getMessageInfoUsers(members, { type, zone });
     return message;
@@ -355,6 +355,7 @@ function MyTelegramBot(config) {
     }).join('\n');
 
     const date = dateFormat.getDateFormat(timestamp * 1000, zone);
+
     const msg =
       `IOTA price at ${date}:\n` +
       `${price}$ = ${(convert.convertTo(price, 1 / USD))}€\n\n` +
@@ -401,7 +402,7 @@ function MyTelegramBot(config) {
     if (error) return bot.sendMessage(chat.id, error);
 
     const type = isGroup(chat.type) ? ModelChat.getCurrency(chat.id) : undefined;
-    const zone = isGroup(chat.type) ? ModelChat.getTimezone(chat.id) : undefined;
+    const zone = isGroup(chat.type) ? ModelChat.getTimezone(chat.id).timezone : undefined;
 
     const message = (await getMessageInfoUsers(members, { type, zone })) +
       format.monospaceFormat(`\nThis message will be updated every ${min} minutes`);
