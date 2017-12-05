@@ -8,7 +8,7 @@ export class CacheService {
   private expiring = new Map<string, number>();
   private cacheData = new Map<string, {}>();
 
-  request(url) {
+  request(url): Observable<any> {
     if (this.expiring.get(url) > Date.now()) {
       return Observable.create(obs => obs.next(this.cacheData.get(url)));
     } else {

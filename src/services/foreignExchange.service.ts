@@ -10,18 +10,18 @@ export class ForeignExchangeService extends CacheService {
     USD: '$',
   };
 
-  USDtoEUR(value) {
-    return this.getRates().map(({ rates }) => value / rates.USD);
+  USDtoEUR(value): Observable<number> {
+    return this.getRates().map(rates => value / rates.USD);
   }
 
-  getSymbol(currency) {
+  getSymbol(currency): string {
     const symbol = this.symbols[currency];
     if (!symbol) throw new Error('Currency not supported');
     return symbol;
   }
 
   getRates(): Observable<any> {
-    const url = `${this.baseUrl}latest/`;
+    const url = `${this.baseUrl}latest`;
     return this.request(url).map(({ rates }) => rates);
   }
 }
