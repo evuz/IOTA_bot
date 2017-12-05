@@ -1,7 +1,4 @@
 import axios from 'axios';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/fromPromise';
-import 'rxjs/add/operator/map';
 
 import { CacheService } from './cache.service';
 
