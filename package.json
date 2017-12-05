@@ -3,14 +3,34 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "dependencies": {
-    "axios": "^0.16.2",
-    "lokijs": "^1.5.0",
-    "node-telegram-bot-api": "^0.27.1",
-    "nodemon": "^1.11.0"
-  },
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "npm run build && npm run serve",
+    "dev": "npm run watch",
+    "build": "npm run build-ts && npm run tslint",
+    "serve": "node dist/index.js",
+    "serve-dev": "nodemon dist/index.js",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-dev\"",
+    "build-ts": "tsc",
+    "watch-ts": "tsc -w",
+    "tslint": "tslint -c tslint.json -p tsconfig.json",
+    "debug": "npm run build && npm run watch-debug",
+    "serve-debug": "nodemon --inspect dist/index.js",
+    "watch-debug": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve-debug\""
+  },
+  "dependencies": {
+    "axios": "^0.17.1",
+    "lokijs": "^1.5.1",
+    "node-telegram-bot-api": "^0.29.0",
+    "nodemon": "^1.12.4"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/jest": "^21.1.8",
+    "@types/node": "^8.0.54",
+    "@types/node-telegram-bot-api": "^0.28.2",
+    "concurrently": "^3.5.1",
+    "ts-jest": "^21.2.4",
+    "tslint": "^5.8.0",
+    "typescript": "^2.6.2"
   }
 }
