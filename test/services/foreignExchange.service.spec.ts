@@ -5,11 +5,12 @@ import { ForeignExchangeService } from '../../src/services/foreignExchange.servi
 import { mockFixerLatest } from './apiMock';
 
 describe('ForeignExchangeService', () => {
-  const mock = new MockAdapter(axios);
-  const foreignExchangeService = new ForeignExchangeService();
+  const mock = new MockAdapter(axios, { delayResponse: 200 });
+  let foreignExchangeService: ForeignExchangeService;
 
   beforeEach(() => {
     mockFixerLatest(mock);
+    foreignExchangeService = new ForeignExchangeService();
   });
 
   it('Test getSymbol', () => {
