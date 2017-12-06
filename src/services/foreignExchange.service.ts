@@ -7,7 +7,7 @@ export class ForeignExchangeService extends CacheService {
   private baseUrl = 'http://api.fixer.io/';
   private symbols = {
     EUR: '€',
-    USD: '$',
+    USD: '$'
   };
 
   USDtoEUR(value): Observable<number> {
