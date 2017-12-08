@@ -8,7 +8,10 @@ export function Bot({ token }: IConfigBot) {
 
   function addTextListener(event: RegExp, f: Function) {
     bot.onText(event, (msg, match) => {
-      f(bot, { msg, match });
+      f({ msg, match }).subscribe(str => {
+        const chatId = msg.chat.id;
+        bot.sendMessage(chatId, str);
+      });
     });
   }
 
