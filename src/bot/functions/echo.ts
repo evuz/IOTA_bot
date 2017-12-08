@@ -3,9 +3,11 @@ import { ITelegramMessage } from '../../interfaces/TelegramMessage';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 
-export const echo = ({ msg, match }: ITelegramMessage): Observable<string> => {
+import { ITelegramSendMessage } from '../../interfaces/TelegramSendMessage';
+
+export const echo = ({ msg, match }: ITelegramMessage): Observable<ITelegramSendMessage> => {
   const chatId = msg.chat.id;
   const resp = match[1];
 
-  return Observable.of(resp);
+  return Observable.of({ text: resp });
 };
