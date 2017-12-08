@@ -19,8 +19,8 @@ describe('Info function', () => {
   it('Test function', done => {
     const rgx = /\/echo (.+)/;
     const match = rgx.exec('/info');
-    info({ msg, match }).subscribe(res => {
-      expect(res).toContain('IOTA price is from 06/12/2017 to 11:40:44');
+    info({ msg, match }).subscribe(({ text }) => {
+      expect(text).toContain('IOTA price is from 06/12/2017 to 11:40:44');
       done();
     });
   });
