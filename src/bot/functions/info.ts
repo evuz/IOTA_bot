@@ -6,9 +6,11 @@ import 'rxjs/add/observable/zip';
 import 'rxjs/add/observable/of';
 
 import { bitfinexService, foreignExchangeService } from './../../services';
+import { createInlineKeyboard } from '../utils/createInlineKeyboard';
 import { ITelegramMessage } from '../../interfaces/TelegramMessage';
+import { ITelegramSendMessage } from '../../interfaces/TelegramSendMessage';
 
-export const info = ({ msg }: ITelegramMessage): Observable<string> => {
+export const info = ({ msg }: ITelegramMessage): Observable<ITelegramSendMessage> => {
   const chatId = msg.chat.id;
 
   return Observable.zip(
@@ -24,9 +26,13 @@ export const info = ({ msg }: ITelegramMessage): Observable<string> => {
     .map(([{ timestamp, price }, eur]) => {
       const date = format(timestamp * 1000, 'DD/MM/YYYY');
       const hour = format(timestamp * 1000, 'HH:mm:ss');
-      return (
+      const opts = createInlineKeyboard([{text: 'Update' }], 'infoIOTA');
+      const text =
         `IOTA price is from ${date} to ${hour}:\n` +
-        `${(+price).toFixed(4)}$ = ${eur.toFixed(4)}€`
-      );
+        `${(+price).toFixed(4)}$ = ${eur.toFixed(4)}€`;
+      return {
+        text,
+        opts,
+      };
     });
 };
