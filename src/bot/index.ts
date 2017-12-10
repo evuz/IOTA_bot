@@ -16,5 +16,11 @@ export function Bot({ token }: IConfigBot) {
     });
   }
 
-  return { addTextListener };
+  function addCallbackQuery(f: Function) {
+    bot.on('callback_query', callbackQuery => {
+      f(bot, callbackQuery);
+    });
+  }
+
+  return { addTextListener, addCallbackQuery };
 }

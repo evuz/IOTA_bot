@@ -10,9 +10,7 @@ import { createInlineKeyboard } from '../utils/createInlineKeyboard';
 import { ITelegramMessage } from '../../interfaces/TelegramMessage';
 import { ITelegramSendMessage } from '../../interfaces/TelegramSendMessage';
 
-export const info = ({ msg }: ITelegramMessage): Observable<ITelegramSendMessage> => {
-  const chatId = msg.chat.id;
-
+export const info = (): Observable<ITelegramSendMessage> => {
   return Observable.zip(
     bitfinexService.getIOTAPrice(),
     foreignExchangeService.getRates(),
