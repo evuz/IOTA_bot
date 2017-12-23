@@ -1,7 +1,7 @@
 function notificationsAlgorithm() {
   const minsCheckInterval = 5;
   const numIntervalsFilter = 3;
-  const delta = () => new Date().getHours() > 7 ? 0.015 : 0.03;
+  const delta = () => new Date().getHours() > 7 ? 0.05 : 0.1;
 
   const TrendingType = {
     Increasing: 0,
@@ -24,7 +24,7 @@ function notificationsAlgorithm() {
             if (avgValue < inflectionValue) {
               trending = TrendingType.Decreasing;
               numIntervalsKeeping = 0;
-            } else if (inflectionValue + delta() <= avgValue) {
+            } else if (inflectionValue + inflectionValue*delta() <= avgValue) {
               numIntervalsKeeping++;
             } else {
               numIntervalsKeeping = 0;
@@ -35,7 +35,7 @@ function notificationsAlgorithm() {
             if (avgValue >= inflectionValue) {
               trending = TrendingType.Increasing;
               numIntervalsKeeping = 0;
-            } else if (inflectionValue - delta() > avgValue) {
+            } else if (inflectionValue - inflectionValue*delta() > avgValue) {
               numIntervalsKeeping++;
             } else {
               numIntervalsKeeping = 0;
