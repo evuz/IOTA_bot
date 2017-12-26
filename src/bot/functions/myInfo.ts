@@ -4,6 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 
 import { users } from '../../db/index';
+import { chats } from './../../db/index';
 
 import { foreignExchangeService } from './../../services/index';
 
@@ -18,13 +19,17 @@ import { ITelegramSendMessage } from '../../interfaces/TelegramSendMessage';
 
 export const myInfo = ({ msg }): Observable<ITelegramSendMessage> => {
   const userId = msg.from.id;
+  const chatId = msg.chat.id;
   return getIotaPriceEur().map(([{ timestamp, price }, eur]) => {
     const user = users.getUser(userId);
-    const infoText = generateInfoEurPrice(price, eur, timestamp);
+    const chatTimezone = chats.getTimezone(chatId);
+    const infoText = generateInfoEurPrice(price, eur, { timestamp, timezoneOffset: chatTimezone });
     const opts = Object.assign(createInlineKeyboard([{ text: 'Update' }], 'myInfo'), { parse_mode: 'markdown' });
     try {
       const priceToUse = user.currency === 'EUR' ? eur : price;
-      const userText = generateInfoUser(user, +priceToUse, { currency: foreignExchangeService.getSymbol(user.currency) });
+      const userText = generateInfoUser(user, +priceToUse, {
+        currency: foreignExchangeService.getSymbol(user.currency),
+      });
       const text = `${infoText}\n\n${userText}`;
       return {
         text: monospaceFormat(text),

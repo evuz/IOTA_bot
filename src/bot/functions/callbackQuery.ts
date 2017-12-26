@@ -14,18 +14,18 @@ export function onCallbackQuery(telegramBot: TelegramBot, callbackQuery: Callbac
     chat_id: chat.id,
     message_id: message_id,
   };
+  const msg = { from: { id: userId }, chat: { id: chat.id } };
 
   switch (command) {
     case 'infoIOTA': {
       telegramBot.editMessageText('Updating...', callbackOpts);
-      Observable.zip(info(), Observable.timer(200)).subscribe(([{ text, opts }]) => {
+      Observable.zip(info({ msg }), Observable.timer(200)).subscribe(([{ text, opts }]) => {
         telegramBot.editMessageText(text, Object.assign({}, callbackOpts, opts));
       });
       break;
     }
     case 'myInfo': {
       telegramBot.editMessageText('Updating...', callbackOpts);
-      const msg = { from: { id: userId } };
       Observable.zip(myInfo({ msg }), Observable.timer(200)).subscribe(([{ text, opts }]) => {
         telegramBot.editMessageText(text, Object.assign({}, callbackOpts, opts));
       });
