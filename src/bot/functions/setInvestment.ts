@@ -24,7 +24,7 @@ export const setInvestment = ({ msg, match }: ITelegramMessage): Observable<ITel
       });
 
     users.setInvestment(userId, parseInt(investment));
-    Observable.of({ text: 'Save!' });
+    return Observable.of({ text: 'Save!' });
   } catch (err) {
     return Observable.of({
       text: `${err}!`,
