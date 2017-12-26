@@ -51,6 +51,19 @@ export class Users {
     return user;
   }
 
+  public setCurrency(id: number, currency: string) {
+    currency = currency.toUpperCase();
+    if (currency !== 'USD' && currency !== 'EUR') throw new Error('Currency not supported yet, you can use USD or EUR');
+
+    let user = this.findUserById(id);
+    if (user === null) {
+      throw new Error('User not found, use /start to create the user');
+    }
+    user = Object.assign({}, user, { currency });
+    this.users.update(user);
+    return user;
+  }
+
   public getUser(id) {
     return this.findUserById(id);
   }

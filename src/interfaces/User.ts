@@ -5,4 +5,5 @@ export interface IUser {
   name: string;
   iotas?: number;
   investment?: number;
+  currency: string;
 }
