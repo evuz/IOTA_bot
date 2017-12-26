@@ -14,8 +14,8 @@ export class ForeignExchangeService extends CacheService {
     return this.getRates().map(rates => value / rates.USD);
   }
 
-  getSymbol(currency): string {
-    const symbol = this.symbols[currency];
+  getSymbol(currency: string): string {
+    const symbol = this.symbols[currency.toUpperCase()];
     if (!symbol) throw new Error('Currency not supported');
     return symbol;
   }
