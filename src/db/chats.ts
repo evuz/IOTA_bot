@@ -21,6 +21,23 @@ export class Chats {
     return this.chats.insert({ id, type, members: new Map<number, boolean>() });
   }
 
+  public setTimezone(id, timezone) {
+    let chat: IChat = this.findChatById(id);
+    if (chat === null) {
+      throw new Error('Chat not found');
+    }
+    chat = Object.assign({}, chat, { timezone });
+    this.chats.update(chat);
+  }
+
+  public getTimezone(id): number {
+    const chat: IChat = this.findChatById(id);
+    if (chat === null) {
+      throw new Error('Chat not found');
+    }
+    return chat.timezone || 0;
+  }
+
   public addMemberToChat(chatId, userId) {
     const chat: IChat = this.findChatById(chatId);
     if (chat === null) {
