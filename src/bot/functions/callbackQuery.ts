@@ -5,11 +5,11 @@ import 'rxjs/add/operator/zip';
 import 'rxjs/add/observable/timer';
 
 import { info } from './info';
+import { myInfo } from './myInfo';
 
 export function onCallbackQuery(telegramBot: TelegramBot, callbackQuery: CallbackQuery) {
   const { message: { chat, message_id }, from: { id: userId }, id: callback_query_id } = callbackQuery;
   const [command, value] = callbackQuery.data.split(' ');
-
   const callbackOpts = {
     chat_id: chat.id,
     message_id: message_id,
@@ -19,6 +19,14 @@ export function onCallbackQuery(telegramBot: TelegramBot, callbackQuery: Callbac
     case 'infoIOTA': {
       telegramBot.editMessageText('Updating...', callbackOpts);
       Observable.zip(info(), Observable.timer(200)).subscribe(([{ text, opts }]) => {
+        telegramBot.editMessageText(text, Object.assign({}, callbackOpts, opts));
+      });
+      break;
+    }
+    case 'myInfo': {
+      telegramBot.editMessageText('Updating...', callbackOpts);
+      const msg = { from: { id: userId } };
+      Observable.zip(myInfo({ msg }), Observable.timer(200)).subscribe(([{ text, opts }]) => {
         telegramBot.editMessageText(text, Object.assign({}, callbackOpts, opts));
       });
       break;

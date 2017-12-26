@@ -7,6 +7,7 @@ import { start } from './start';
 import { setIota } from './setIota';
 import { setInvestment } from './setInvestment';
 import { setName } from './setName';
+import { myInfo } from './myInfo';
 import { onCallbackQuery } from './callbackQuery';
 
 export function addListeners(bot: IBot) {
@@ -16,5 +17,6 @@ export function addListeners(bot: IBot) {
   bot.addTextListener(/\/set_iota (.+)/, setIota);
   bot.addTextListener(/\/set_investment (.+)/, setInvestment);
   bot.addTextListener(/\/set_alias (.+)/, setName);
+  bot.addTextListener(/\/my_info/, myInfo);
   bot.addCallbackQuery(onCallbackQuery);
 }
