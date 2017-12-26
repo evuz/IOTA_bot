@@ -1,8 +1,10 @@
 import * as Loki from 'lokijs';
 import { Collection } from 'lokijs';
 
+import { IUser } from '../interfaces/User';
+
 export class Users {
-  private users: Collection;
+  private users: Collection<IUser>;
 
   constructor(db: Loki) {
     this.users = db.getCollection('users');
@@ -47,6 +49,10 @@ export class Users {
     user = Object.assign({}, user, { name });
     this.users.update(user);
     return user;
+  }
+
+  public getUser(id) {
+    return this.findUserById(id);
   }
 
   private findUserById(id) {
